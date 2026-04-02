@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { startOfDay, startOfWeek, startOfMonth, isAfter, isBefore, parseISO } from "date-fns";
 import KpiCard from "@/components/KpiCard";
 import { CodTfPie, OrdersBarChart, TrendLineChart } from "@/components/Charts";
@@ -11,6 +12,7 @@ import { formatRupiah, formatNumber, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 
 export default function Home() {
+  const { data: session } = useSession();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState("");
@@ -120,6 +122,17 @@ export default function Home() {
               {updatedAt && ` · Updated ${new Date(updatedAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`}
             </p>
           </div>
+          {session?.user && (
+            <div className="flex items-center gap-3">
+              <span className="text-[#8892a8] text-xs hidden sm:inline">{session.user.email}</span>
+              <button
+                onClick={() => signOut()}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] hover:border-red-500/50 hover:text-red-400 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          )}
           <DateFilter
             range={dateRange}
             customFrom={customFrom}
