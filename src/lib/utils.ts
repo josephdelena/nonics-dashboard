@@ -8,10 +8,17 @@ export function formatNumber(val: number): string {
 
 export function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null;
-  // Handle DD/MM/YYYY or YYYY-MM-DD
-  const parts = dateStr.split("/");
-  if (parts.length === 3) {
-    const [day, month, year] = parts;
+  // Handle DD/MM/YYYY
+  const slashParts = dateStr.split("/");
+  if (slashParts.length === 3) {
+    const [day, month, year] = slashParts;
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  }
+  // Handle "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" — strip time part for date-only comparison
+  const dateOnly = dateStr.split(" ")[0];
+  const dashParts = dateOnly.split("-");
+  if (dashParts.length === 3) {
+    const [year, month, day] = dashParts;
     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   }
   const d = new Date(dateStr);

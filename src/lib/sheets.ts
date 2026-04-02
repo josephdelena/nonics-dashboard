@@ -42,7 +42,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
   const sheetNames = (meta.data.sheets || [])
     .map((s) => s.properties?.title || "")
-    .filter((name) => name !== "Dashboard" && name !== "");
+    .filter((name) => name !== "Dashboard" && name !== "Rekap CS" && name !== "");
 
   const orders: OrderRow[] = [];
 
