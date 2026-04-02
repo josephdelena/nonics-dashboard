@@ -1,6 +1,6 @@
 "use client";
 
-export type DateRange = "today" | "week" | "month" | "all" | "custom";
+export type DateRange = "today" | "yesterday" | "week" | "month" | "all" | "custom";
 
 interface Props {
   range: DateRange;
@@ -14,6 +14,7 @@ interface Props {
 export default function DateFilter({ range, customFrom, customTo, onRangeChange, onCustomFromChange, onCustomToChange }: Props) {
   const buttons: { label: string; value: DateRange }[] = [
     { label: "Hari Ini", value: "today" },
+    { label: "Kemarin", value: "yesterday" },
     { label: "Minggu Ini", value: "week" },
     { label: "Bulan Ini", value: "month" },
     { label: "Semua", value: "all" },

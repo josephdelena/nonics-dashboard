@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { startOfDay, startOfWeek, startOfMonth, isAfter, isBefore, parseISO } from "date-fns";
+import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays, isAfter, isBefore, parseISO } from "date-fns";
 import KpiCard from "@/components/KpiCard";
 import { CodTfPie, OrdersBarChart, TrendLineChart } from "@/components/Charts";
 import DateFilter, { type DateRange } from "@/components/DateFilter";
@@ -41,6 +41,10 @@ export default function Home() {
 
     if (dateRange === "today") {
       from = startOfDay(now);
+    } else if (dateRange === "yesterday") {
+      const yesterday = subDays(now, 1);
+      from = startOfDay(yesterday);
+      to = endOfDay(yesterday);
     } else if (dateRange === "week") {
       from = startOfWeek(now, { weekStartsOn: 1 });
     } else if (dateRange === "month") {
