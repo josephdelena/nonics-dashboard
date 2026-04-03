@@ -21,6 +21,7 @@ export default function Home() {
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+  const [showDupModal, setShowDupModal] = useState(false);
 
   useEffect(() => {
     fetch("/api/orders")
@@ -159,7 +160,7 @@ export default function Home() {
           <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
           <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
           <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
-          <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} />
+          <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} />
           <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
           <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
           <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
@@ -180,6 +181,45 @@ export default function Home() {
       <footer className="border-t border-[#2a3a5c] py-4 mt-8">
         <p className="text-center text-[#8892a8] text-xs">NONICS MANTAP Dashboard — Powered by Sheetgram</p>
       </footer>
+
+      {showDupModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowDupModal(false)}>
+          <div className="bg-[#141e38] border border-[#2a3a5c] rounded-xl w-full max-w-3xl max-h-[80vh] overflow-hidden mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-5 py-4 border-b border-[#2a3a5c]">
+              <h3 className="text-red-400 font-semibold text-sm">Order Duplikat ({dupOrders.length})</h3>
+              <button onClick={() => setShowDupModal(false)} className="text-[#8892a8] hover:text-white text-lg leading-none">&times;</button>
+            </div>
+            <div className="overflow-auto max-h-[calc(80vh-60px)]">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-[#1a2547]">
+                  <tr className="border-b border-[#2a3a5c]">
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Tanggal</th>
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Grup</th>
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">CS</th>
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Customer</th>
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">No HP</th>
+                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Produk</th>
+                    <th className="text-right py-2 px-3 text-[#8892a8] font-medium text-xs">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dupOrders.map((o, i) => (
+                    <tr key={`dup-${i}`} className={`border-b border-[#2a3a5c]/50 ${i % 2 === 0 ? "bg-[#141e38]" : "bg-[#1a2547]/30"}`}>
+                      <td className="py-2 px-3 text-xs whitespace-nowrap">{o.tanggal}</td>
+                      <td className="py-2 px-3 text-xs">{o.grup}</td>
+                      <td className="py-2 px-3 text-xs">{o.namaCs}</td>
+                      <td className="py-2 px-3 text-xs font-medium text-amber-400">{o.namaCustomer}</td>
+                      <td className="py-2 px-3 text-xs">{o.noWa}</td>
+                      <td className="py-2 px-3 text-xs">{o.produk}</td>
+                      <td className="py-2 px-3 text-xs text-right text-[#d9a84e]">{formatRupiah(o.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
