@@ -8,6 +8,7 @@ import { CodTfPie, OrdersBarChart, TrendLineChart } from "@/components/Charts";
 import DateFilter, { type DateRange } from "@/components/DateFilter";
 import GrupBreakdown from "@/components/GrupBreakdown";
 import CsPerformance from "@/components/CsPerformance";
+import RekapCs from "@/components/RekapCs";
 import OrderTable from "@/components/OrderTable";
 import { formatRupiah, formatNumber, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
@@ -166,6 +167,7 @@ export default function Home() {
         </div>
 
         <GrupBreakdown data={grupBreakdown} />
+        <RekapCs orders={orders} />
         <CsPerformance orders={filtered} />
         <OrderTable orders={filtered} />
       </main>
