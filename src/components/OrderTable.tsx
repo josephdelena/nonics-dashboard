@@ -48,12 +48,11 @@ export default function OrderTable({ orders }: Props) {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Reset page when filters change
   const resetPage = () => setPage(1);
 
   return (
-    <div className="bg-[#141e38] border border-[#2a3a5c] rounded-xl p-5">
-      <h3 className="text-[#d9a84e] font-semibold text-sm mb-4">Detail Orders</h3>
+    <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 shadow-sm">
+      <h3 className="text-[#EE4D2D] font-semibold text-sm mb-4">Detail Orders</h3>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -62,12 +61,12 @@ export default function OrderTable({ orders }: Props) {
           placeholder="Cari nama, produk, CS, alamat..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); resetPage(); }}
-          className="flex-1 bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] placeholder-[#8892a8] focus:outline-none focus:border-[#d9a84e]"
+          className="flex-1 bg-white border border-[#E8E8E8] rounded-lg px-3 py-2 text-sm text-[#333333] placeholder-[#CCCCCC] focus:outline-none focus:border-[#EE4D2D]"
         />
         <select
           value={filterTipe}
           onChange={(e) => { setFilterTipe(e.target.value as "ALL" | "COD" | "TF"); resetPage(); }}
-          className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+          className="bg-white border border-[#E8E8E8] rounded-lg px-3 py-2 text-sm text-[#333333] focus:outline-none focus:border-[#EE4D2D]"
         >
           <option value="ALL">Semua Tipe</option>
           <option value="COD">COD</option>
@@ -76,7 +75,7 @@ export default function OrderTable({ orders }: Props) {
         <select
           value={filterGrup}
           onChange={(e) => { setFilterGrup(e.target.value); resetPage(); }}
-          className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+          className="bg-white border border-[#E8E8E8] rounded-lg px-3 py-2 text-sm text-[#333333] focus:outline-none focus:border-[#EE4D2D]"
         >
           <option value="ALL">Semua Grup</option>
           {grups.map((g) => (
@@ -86,7 +85,7 @@ export default function OrderTable({ orders }: Props) {
         <select
           value={filterStatus}
           onChange={(e) => { setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS" | "DUPLIKAT"); resetPage(); }}
-          className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+          className="bg-white border border-[#E8E8E8] rounded-lg px-3 py-2 text-sm text-[#333333] focus:outline-none focus:border-[#EE4D2D]"
         >
           <option value="ALL">Semua Status</option>
           <option value="Sukses">Sukses</option>
@@ -95,22 +94,22 @@ export default function OrderTable({ orders }: Props) {
         </select>
       </div>
 
-      <p className="text-[#8892a8] text-xs mb-3">{filtered.length} orders ditampilkan</p>
+      <p className="text-[#999999] text-xs mb-3">{filtered.length} orders ditampilkan</p>
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#2a3a5c]">
-              <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">Tanggal</th>
-              <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">Grup</th>
-              <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">CS</th>
-              <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">Produk</th>
-              <th className="text-right py-2 px-2 text-[#8892a8] font-medium text-xs">Harga</th>
-              <th className="text-right py-2 px-2 text-[#8892a8] font-medium text-xs">Total</th>
-              <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">Customer</th>
-              <th className="text-center py-2 px-2 text-[#8892a8] font-medium text-xs">Tipe</th>
-              <th className="text-center py-2 px-2 text-[#8892a8] font-medium text-xs">Status</th>
+            <tr className="border-b border-[#E8E8E8]">
+              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Tanggal</th>
+              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Grup</th>
+              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">CS</th>
+              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Produk</th>
+              <th className="text-right py-2 px-2 text-[#999999] font-medium text-xs">Harga</th>
+              <th className="text-right py-2 px-2 text-[#999999] font-medium text-xs">Total</th>
+              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Customer</th>
+              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">Tipe</th>
+              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -124,8 +123,8 @@ export default function OrderTable({ orders }: Props) {
                 if (dateKey !== lastDateKey) {
                   const label = d ? format(d, "dd MMMM yyyy", { locale: id }) : dateKey;
                   rows.push(
-                    <tr key={`date-${dateKey}`} className="bg-[#1e2d50]">
-                      <td colSpan={9} className="py-2 px-3 text-xs font-semibold text-[#d9a84e] tracking-wide">
+                    <tr key={`date-${dateKey}`} className="bg-[#FFF0ED]">
+                      <td colSpan={9} className="py-2 px-3 text-xs font-semibold text-[#EE4D2D] tracking-wide">
                         {"\uD83D\uDCC5"} {label}
                       </td>
                     </tr>
@@ -133,19 +132,19 @@ export default function OrderTable({ orders }: Props) {
                   lastDateKey = dateKey;
                 }
                 rows.push(
-                  <tr key={`${o.grup}-${o.no}-${i}`} className={`border-b border-[#2a3a5c]/50 ${i % 2 === 0 ? "bg-[#141e38]" : "bg-[#1a2547]/30"} hover:bg-[#243360]/50 transition-colors`}>
-                    <td className="py-2 px-2 text-xs whitespace-nowrap">{o.tanggal}</td>
-                    <td className="py-2 px-2 text-xs">{o.grup}</td>
-                    <td className="py-2 px-2 text-xs">{o.namaCs}</td>
-                    <td className="py-2 px-2 text-xs">{o.produk}</td>
-                    <td className="py-2 px-2 text-xs text-right">{formatRupiah(o.hargaJual)}</td>
-                    <td className="py-2 px-2 text-xs text-right font-medium text-[#d9a84e]">{formatRupiah(o.total)}</td>
-                    <td className="py-2 px-2 text-xs">{o.namaCustomer}</td>
+                  <tr key={`${o.grup}-${o.no}-${i}`} className={`border-b border-[#E8E8E8]/50 ${i % 2 === 0 ? "bg-white" : "bg-[#FFF9F8]"} hover:bg-[#FFF0ED] transition-colors`}>
+                    <td className="py-2 px-2 text-xs whitespace-nowrap text-[#333333]">{o.tanggal}</td>
+                    <td className="py-2 px-2 text-xs text-[#333333]">{o.grup}</td>
+                    <td className="py-2 px-2 text-xs text-[#333333]">{o.namaCs}</td>
+                    <td className="py-2 px-2 text-xs text-[#333333]">{o.produk}</td>
+                    <td className="py-2 px-2 text-xs text-right text-[#333333]">{formatRupiah(o.hargaJual)}</td>
+                    <td className="py-2 px-2 text-xs text-right font-medium text-[#EE4D2D]">{formatRupiah(o.total)}</td>
+                    <td className="py-2 px-2 text-xs text-[#333333]">{o.namaCustomer}</td>
                     <td className="py-2 px-2 text-xs text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         o.tipe === "COD"
-                          ? "bg-[#e07040]/20 text-[#e07040]"
-                          : "bg-[#2ea88a]/20 text-[#2ea88a]"
+                          ? "bg-[#EE4D2D]/10 text-[#EE4D2D]"
+                          : "bg-[#2EA88A]/10 text-[#2EA88A]"
                       }`}>
                         {o.tipe}
                       </span>
@@ -153,10 +152,10 @@ export default function OrderTable({ orders }: Props) {
                     <td className="py-2 px-2 text-xs text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         o.status === "RTS"
-                          ? "bg-red-500/20 text-red-400"
+                          ? "bg-red-100 text-red-600"
                           : o.status === "DUPLIKAT"
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-emerald-500/20 text-emerald-400"
+                            ? "bg-amber-100 text-amber-600"
+                            : "bg-emerald-100 text-emerald-600"
                       }`}>
                         {o.status}
                       </span>
@@ -173,7 +172,7 @@ export default function OrderTable({ orders }: Props) {
             <button
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] disabled:opacity-30 hover:border-[#d9a84e]/50 transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-[#666666] border border-[#E8E8E8] disabled:opacity-30 hover:border-[#EE4D2D]/50 transition-colors"
             >
               &laquo; Prev
             </button>
@@ -186,15 +185,15 @@ export default function OrderTable({ orders }: Props) {
               }, [])
               .map((p, i) =>
                 p === "..." ? (
-                  <span key={`dots-${i}`} className="text-[#8892a8] text-xs px-1">&hellip;</span>
+                  <span key={`dots-${i}`} className="text-[#999999] text-xs px-1">&hellip;</span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p as number)}
                     className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${
                       page === p
-                        ? "bg-[#d9a84e] text-[#0f1a33]"
-                        : "bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] hover:border-[#d9a84e]/50"
+                        ? "bg-[#EE4D2D] text-white"
+                        : "bg-white text-[#666666] border border-[#E8E8E8] hover:border-[#EE4D2D]/50"
                     }`}
                   >
                     {p}
@@ -204,12 +203,12 @@ export default function OrderTable({ orders }: Props) {
             <button
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] disabled:opacity-30 hover:border-[#d9a84e]/50 transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-[#666666] border border-[#E8E8E8] disabled:opacity-30 hover:border-[#EE4D2D]/50 transition-colors"
             >
               Next &raquo;
             </button>
-            <span className="text-[#8892a8] text-xs ml-2">
-              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} dari {filtered.length}
+            <span className="text-[#999999] text-xs ml-2">
+              {(page - 1) * PAGE_SIZE + 1}&ndash;{Math.min(page * PAGE_SIZE, filtered.length)} dari {filtered.length}
             </span>
           </div>
         )}

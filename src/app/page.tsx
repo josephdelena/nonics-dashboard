@@ -113,32 +113,32 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#d9a84e] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[#8892a8] text-sm">Memuat data...</p>
+          <div className="w-8 h-8 border-2 border-[#EE4D2D] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[#999999] text-sm">Memuat data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-[#1a2547] border-b border-[#2a3a5c] sticky top-0 z-50">
+    <div className="min-h-screen bg-[#F5F5F5]">
+      <header className="bg-gradient-to-r from-[#EE4D2D] to-[#FF6E4A] sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-xl font-bold text-[#d9a84e] tracking-wide">NONICS MANTAP</h1>
-            <p className="text-[#8892a8] text-xs">
+            <h1 className="text-xl font-bold text-white tracking-wide">NONICS MANTAP</h1>
+            <p className="text-white/70 text-xs">
               Sales Dashboard
-              {updatedAt && ` · Updated ${new Date(updatedAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`}
+              {updatedAt && ` \u00B7 Updated ${new Date(updatedAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`}
             </p>
           </div>
           {session?.user && (
             <div className="flex items-center gap-3">
-              <span className="text-[#8892a8] text-xs hidden sm:inline">{session.user.email}</span>
+              <span className="text-white/70 text-xs hidden sm:inline">{session.user.email}</span>
               <button
                 onClick={() => signOut()}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] hover:border-red-500/50 hover:text-red-400 transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/20 text-white border border-white/30 hover:bg-white/30 transition-colors"
               >
                 Logout
               </button>
@@ -178,40 +178,40 @@ export default function Home() {
         <OrderTable orders={filtered} />
       </main>
 
-      <footer className="border-t border-[#2a3a5c] py-4 mt-8">
-        <p className="text-center text-[#8892a8] text-xs">NONICS MANTAP Dashboard — Powered by Sheetgram</p>
+      <footer className="border-t border-[#E8E8E8] bg-white py-4 mt-8">
+        <p className="text-center text-[#999999] text-xs">NONICS MANTAP Dashboard &mdash; Powered by Sheetgram</p>
       </footer>
 
       {showDupModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowDupModal(false)}>
-          <div className="bg-[#141e38] border border-[#2a3a5c] rounded-xl w-full max-w-3xl max-h-[80vh] overflow-hidden mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center px-5 py-4 border-b border-[#2a3a5c]">
-              <h3 className="text-red-400 font-semibold text-sm">Order Duplikat ({dupOrders.length})</h3>
-              <button onClick={() => setShowDupModal(false)} className="text-[#8892a8] hover:text-white text-lg leading-none">&times;</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowDupModal(false)}>
+          <div className="bg-white border border-[#E8E8E8] rounded-xl w-full max-w-3xl max-h-[80vh] overflow-hidden mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-5 py-4 border-b border-[#E8E8E8]">
+              <h3 className="text-red-500 font-semibold text-sm">Order Duplikat ({dupOrders.length})</h3>
+              <button onClick={() => setShowDupModal(false)} className="text-[#999999] hover:text-[#333333] text-lg leading-none">&times;</button>
             </div>
             <div className="overflow-auto max-h-[calc(80vh-60px)]">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-[#1a2547]">
-                  <tr className="border-b border-[#2a3a5c]">
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Tanggal</th>
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Grup</th>
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">CS</th>
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Customer</th>
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">No HP</th>
-                    <th className="text-left py-2 px-3 text-[#8892a8] font-medium text-xs">Produk</th>
-                    <th className="text-right py-2 px-3 text-[#8892a8] font-medium text-xs">Total</th>
+                <thead className="sticky top-0 bg-[#F5F5F5]">
+                  <tr className="border-b border-[#E8E8E8]">
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">Tanggal</th>
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">Grup</th>
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">CS</th>
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">Customer</th>
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">No HP</th>
+                    <th className="text-left py-2 px-3 text-[#999999] font-medium text-xs">Produk</th>
+                    <th className="text-right py-2 px-3 text-[#999999] font-medium text-xs">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dupOrders.map((o, i) => (
-                    <tr key={`dup-${i}`} className={`border-b border-[#2a3a5c]/50 ${i % 2 === 0 ? "bg-[#141e38]" : "bg-[#1a2547]/30"}`}>
-                      <td className="py-2 px-3 text-xs whitespace-nowrap">{o.tanggal}</td>
-                      <td className="py-2 px-3 text-xs">{o.grup}</td>
-                      <td className="py-2 px-3 text-xs">{o.namaCs}</td>
-                      <td className="py-2 px-3 text-xs font-medium text-amber-400">{o.namaCustomer}</td>
-                      <td className="py-2 px-3 text-xs">{o.noWa}</td>
-                      <td className="py-2 px-3 text-xs">{o.produk}</td>
-                      <td className="py-2 px-3 text-xs text-right text-[#d9a84e]">{formatRupiah(o.total)}</td>
+                    <tr key={`dup-${i}`} className={`border-b border-[#E8E8E8]/50 ${i % 2 === 0 ? "bg-white" : "bg-[#FFF9F8]"}`}>
+                      <td className="py-2 px-3 text-xs whitespace-nowrap text-[#333333]">{o.tanggal}</td>
+                      <td className="py-2 px-3 text-xs text-[#333333]">{o.grup}</td>
+                      <td className="py-2 px-3 text-xs text-[#333333]">{o.namaCs}</td>
+                      <td className="py-2 px-3 text-xs font-medium text-amber-600">{o.namaCustomer}</td>
+                      <td className="py-2 px-3 text-xs text-[#333333]">{o.noWa}</td>
+                      <td className="py-2 px-3 text-xs text-[#333333]">{o.produk}</td>
+                      <td className="py-2 px-3 text-xs text-right text-[#EE4D2D]">{formatRupiah(o.total)}</td>
                     </tr>
                   ))}
                 </tbody>

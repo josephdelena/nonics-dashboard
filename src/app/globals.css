@@ -1,41 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --navy: #1a2547;
-  --navy-light: #243360;
-  --navy-dark: #0f1a33;
-  --gold: #d9a84e;
-  --gold-light: #e8c47a;
-  --gold-dark: #b8872e;
-  --surface: #141e38;
-  --surface-light: #1c2a4a;
-  --border: #2a3a5c;
-  --text: #e8eaf0;
-  --text-muted: #8892a8;
+  --primary: #EE4D2D;
+  --primary-light: #FF6E4A;
+  --primary-dark: #D73211;
+  --accent: #FFF0ED;
+  --surface: #FFFFFF;
+  --surface-alt: #FFF9F8;
+  --border: #E8E8E8;
+  --text: #333333;
+  --text-muted: #999999;
+  --bg: #F5F5F5;
 }
 
 @theme inline {
-  --color-navy: var(--navy);
-  --color-navy-light: var(--navy-light);
-  --color-navy-dark: var(--navy-dark);
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-gold-dark: var(--gold-dark);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
   --color-surface: var(--surface);
-  --color-surface-light: var(--surface-light);
+  --color-surface-alt: var(--surface-alt);
   --color-border: var(--border);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
 }
 
 body {
-  background: var(--navy-dark);
+  background: var(--bg);
   color: var(--text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--navy-dark); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }

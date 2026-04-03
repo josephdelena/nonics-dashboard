@@ -30,8 +30,8 @@ export default function DateFilter({ range, customFrom, customTo, onRangeChange,
             onClick={() => onRangeChange(b.value)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               range === b.value
-                ? "bg-[#d9a84e] text-[#0f1a33]"
-                : "bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] hover:border-[#d9a84e]/50"
+                ? "bg-[#EE4D2D] text-white"
+                : "bg-white text-[#666666] border border-[#E8E8E8] hover:border-[#EE4D2D]/50"
             }`}
           >
             {b.label}
@@ -44,14 +44,14 @@ export default function DateFilter({ range, customFrom, customTo, onRangeChange,
             type="date"
             value={customFrom}
             onChange={(e) => onCustomFromChange(e.target.value)}
-            className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-2 py-1.5 text-xs text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+            className="bg-white border border-[#E8E8E8] rounded-lg px-2 py-1.5 text-xs text-[#333333] focus:outline-none focus:border-[#EE4D2D]"
           />
-          <span className="text-[#8892a8] text-xs">—</span>
+          <span className="text-[#999999] text-xs">&mdash;</span>
           <input
             type="date"
             value={customTo}
             onChange={(e) => onCustomToChange(e.target.value)}
-            className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-2 py-1.5 text-xs text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+            className="bg-white border border-[#E8E8E8] rounded-lg px-2 py-1.5 text-xs text-[#333333] focus:outline-none focus:border-[#EE4D2D]"
           />
         </div>
       )}
