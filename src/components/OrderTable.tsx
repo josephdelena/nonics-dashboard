@@ -14,6 +14,7 @@ export default function OrderTable({ orders }: Props) {
   const [search, setSearch] = useState("");
   const [filterTipe, setFilterTipe] = useState<"ALL" | "COD" | "TF">("ALL");
   const [filterGrup, setFilterGrup] = useState("ALL");
+  const [filterStatus, setFilterStatus] = useState<"ALL" | "Sukses" | "RTS">("ALL");
 
   const grups = useMemo(() => [...new Set(orders.map((o) => o.grup))].sort(), [orders]);
 
@@ -21,6 +22,7 @@ export default function OrderTable({ orders }: Props) {
     const result = orders.filter((o) => {
       if (filterTipe !== "ALL" && o.tipe !== filterTipe) return false;
       if (filterGrup !== "ALL" && o.grup !== filterGrup) return false;
+      if (filterStatus !== "ALL" && o.status !== filterStatus) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -39,7 +41,7 @@ export default function OrderTable({ orders }: Props) {
       if (!da || !db) return 0;
       return db.getTime() - da.getTime();
     });
-  }, [orders, search, filterTipe, filterGrup]);
+  }, [orders, search, filterTipe, filterGrup, filterStatus]);
 
   return (
     <div className="bg-[#141e38] border border-[#2a3a5c] rounded-xl p-5">
@@ -73,6 +75,15 @@ export default function OrderTable({ orders }: Props) {
             <option key={g} value={g}>{g}</option>
           ))}
         </select>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS")}
+          className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
+        >
+          <option value="ALL">Semua Status</option>
+          <option value="Sukses">Sukses</option>
+          <option value="RTS">RTS</option>
+        </select>
       </div>
 
       <p className="text-[#8892a8] text-xs mb-3">{filtered.length} orders ditampilkan</p>
@@ -90,6 +101,7 @@ export default function OrderTable({ orders }: Props) {
               <th className="text-right py-2 px-2 text-[#8892a8] font-medium text-xs">Total</th>
               <th className="text-left py-2 px-2 text-[#8892a8] font-medium text-xs">Customer</th>
               <th className="text-center py-2 px-2 text-[#8892a8] font-medium text-xs">Tipe</th>
+              <th className="text-center py-2 px-2 text-[#8892a8] font-medium text-xs">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -104,7 +116,7 @@ export default function OrderTable({ orders }: Props) {
                   const label = d ? format(d, "dd MMMM yyyy", { locale: id }) : dateKey;
                   rows.push(
                     <tr key={`date-${dateKey}`} className="bg-[#1e2d50]">
-                      <td colSpan={8} className="py-2 px-3 text-xs font-semibold text-[#d9a84e] tracking-wide">
+                      <td colSpan={9} className="py-2 px-3 text-xs font-semibold text-[#d9a84e] tracking-wide">
                         {"\uD83D\uDCC5"} {label}
                       </td>
                     </tr>
@@ -127,6 +139,15 @@ export default function OrderTable({ orders }: Props) {
                           : "bg-[#2ea88a]/20 text-[#2ea88a]"
                       }`}>
                         {o.tipe}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-xs text-center">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        o.status === "RTS"
+                          ? "bg-red-500/20 text-red-400"
+                          : "bg-emerald-500/20 text-emerald-400"
+                      }`}>
+                        {o.status}
                       </span>
                     </td>
                   </tr>

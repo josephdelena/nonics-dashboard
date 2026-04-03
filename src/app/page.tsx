@@ -63,7 +63,10 @@ export default function Home() {
   }, [orders, dateRange, customFrom, customTo]);
 
   const totalOrders = filtered.length;
-  const totalRevenue = filtered.reduce((s, o) => s + o.total, 0);
+  const grossRevenue = filtered.reduce((s, o) => s + o.total, 0);
+  const rtsOrders = filtered.filter((o) => o.status === "RTS");
+  const rtsRevenue = rtsOrders.reduce((s, o) => s + o.total, 0);
+  const netRevenue = grossRevenue - rtsRevenue;
   const codOrders = filtered.filter((o) => o.tipe === "COD");
   const tfOrders = filtered.filter((o) => o.tipe === "TF");
   const codRevenue = codOrders.reduce((s, o) => s + o.total, 0);
@@ -91,7 +94,7 @@ export default function Home() {
     orders: d.orders,
     revenue: d.revenue,
     pctOrders: totalOrders ? (d.orders / totalOrders) * 100 : 0,
-    pctRevenue: totalRevenue ? (d.revenue / totalRevenue) * 100 : 0,
+    pctRevenue: grossRevenue ? (d.revenue / grossRevenue) * 100 : 0,
   }));
 
   const trendMap = new Map<string, { cod: number; tf: number }>();
@@ -153,11 +156,11 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
-          <KpiCard title="Total Revenue" value={formatRupiah(totalRevenue)} accent />
-          <KpiCard title="COD Orders" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
-          <KpiCard title="TF Orders" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
-          <KpiCard title="COD %" value={totalOrders ? `${((codOrders.length / totalOrders) * 100).toFixed(1)}%` : "0%"} />
-          <KpiCard title="TF %" value={totalOrders ? `${((tfOrders.length / totalOrders) * 100).toFixed(1)}%` : "0%"} />
+          <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
+          <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
+          <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
+          <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
+          <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

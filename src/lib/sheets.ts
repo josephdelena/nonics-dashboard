@@ -24,6 +24,7 @@ export interface OrderRow {
   namaCustomer: string;
   noWa: string;
   alamat: string;
+  status: "Sukses" | "RTS";
   grup: string;
   tipe: "COD" | "TF";
 }
@@ -50,7 +51,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
     const tipe = sheetName.includes("COD") ? "COD" : "TF";
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${sheetName}'!A2:K1000`,
+      range: `'${sheetName}'!A2:L1000`,
     });
 
     const rows = res.data.values || [];
@@ -68,6 +69,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         namaCustomer: row[8] || "",
         noWa: row[9] || "",
         alamat: row[10] || "",
+        status: (row[11] || "Sukses") as "Sukses" | "RTS",
         grup: sheetName,
         tipe: tipe as "COD" | "TF",
       });
