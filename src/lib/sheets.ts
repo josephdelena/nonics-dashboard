@@ -55,7 +55,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
 
     const rows = res.data.values || [];
     for (const row of rows) {
-      if (!row[0] || String(row[0]).startsWith("\u{1F4C5}") || String(row[1] || "").startsWith("\u{1F4C5}")) continue;
+      if (!row[0] || String(row[0]).startsWith("\u{1F4C5}")) continue;
       orders.push({
         no: parseInt(row[0]) || 0,
         tanggal: row[1] || "",
