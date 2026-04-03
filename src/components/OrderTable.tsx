@@ -15,6 +15,8 @@ export default function OrderTable({ orders }: Props) {
   const [filterTipe, setFilterTipe] = useState<"ALL" | "COD" | "TF">("ALL");
   const [filterGrup, setFilterGrup] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState<"ALL" | "Sukses" | "RTS" | "DUPLIKAT">("ALL");
+  const PAGE_SIZE = 50;
+  const [page, setPage] = useState(1);
 
   const grups = useMemo(() => [...new Set(orders.map((o) => o.grup))].sort(), [orders]);
 
@@ -43,6 +45,12 @@ export default function OrderTable({ orders }: Props) {
     });
   }, [orders, search, filterTipe, filterGrup, filterStatus]);
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset page when filters change
+  const resetPage = () => setPage(1);
+
   return (
     <div className="bg-[#141e38] border border-[#2a3a5c] rounded-xl p-5">
       <h3 className="text-[#d9a84e] font-semibold text-sm mb-4">Detail Orders</h3>
@@ -53,12 +61,12 @@ export default function OrderTable({ orders }: Props) {
           type="text"
           placeholder="Cari nama, produk, CS, alamat..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); resetPage(); }}
           className="flex-1 bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] placeholder-[#8892a8] focus:outline-none focus:border-[#d9a84e]"
         />
         <select
           value={filterTipe}
-          onChange={(e) => setFilterTipe(e.target.value as "ALL" | "COD" | "TF")}
+          onChange={(e) => { setFilterTipe(e.target.value as "ALL" | "COD" | "TF"); resetPage(); }}
           className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
         >
           <option value="ALL">Semua Tipe</option>
@@ -67,7 +75,7 @@ export default function OrderTable({ orders }: Props) {
         </select>
         <select
           value={filterGrup}
-          onChange={(e) => setFilterGrup(e.target.value)}
+          onChange={(e) => { setFilterGrup(e.target.value); resetPage(); }}
           className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
         >
           <option value="ALL">Semua Grup</option>
@@ -77,7 +85,7 @@ export default function OrderTable({ orders }: Props) {
         </select>
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS" | "DUPLIKAT")}
+          onChange={(e) => { setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS" | "DUPLIKAT"); resetPage(); }}
           className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
         >
           <option value="ALL">Semua Status</option>
@@ -107,7 +115,7 @@ export default function OrderTable({ orders }: Props) {
           </thead>
           <tbody>
             {(() => {
-              const sliced = filtered.slice(0, 100);
+              const sliced = paged;
               let lastDateKey = "";
               const rows: React.ReactNode[] = [];
               sliced.forEach((o, i) => {
@@ -160,8 +168,50 @@ export default function OrderTable({ orders }: Props) {
             })()}
           </tbody>
         </table>
-        {filtered.length > 100 && (
-          <p className="text-[#8892a8] text-xs mt-3 text-center">Menampilkan 100 dari {filtered.length} orders</p>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] disabled:opacity-30 hover:border-[#d9a84e]/50 transition-colors"
+            >
+              &laquo; Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+              .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "..." ? (
+                  <span key={`dots-${i}`} className="text-[#8892a8] text-xs px-1">&hellip;</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${
+                      page === p
+                        ? "bg-[#d9a84e] text-[#0f1a33]"
+                        : "bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] hover:border-[#d9a84e]/50"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1a2547] text-[#8892a8] border border-[#2a3a5c] disabled:opacity-30 hover:border-[#d9a84e]/50 transition-colors"
+            >
+              Next &raquo;
+            </button>
+            <span className="text-[#8892a8] text-xs ml-2">
+              {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} dari {filtered.length}
+            </span>
+          </div>
         )}
       </div>
     </div>
