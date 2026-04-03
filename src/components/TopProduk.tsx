@@ -17,10 +17,10 @@ const PERIOD_LABELS: Record<Period, string> = {
   all: "All Time",
 };
 
-const COLORS = ["#EE4D2D", "#FF6E4A", "#FF9A7B", "#D73211", "#2EA88A", "#4A90D9", "#8B5CF6", "#F59E0B", "#06B6D4", "#EC4899"];
+const COLORS = ["#F5A623", "#F0C040", "#22C55E", "#4A90D9", "#8B5CF6", "#06B6D4", "#EC4899", "#FF6E4A", "#2EA88A", "#D73211"];
 const RANK_BADGES = ["", "\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49"];
 const tooltipStyle = {
-  contentStyle: { backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8", borderRadius: "8px", color: "#333333", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" },
+  contentStyle: { backgroundColor: "#1A1A25", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#E8E6E3", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" },
 };
 
 interface ProdukRow {
@@ -78,11 +78,11 @@ export default function TopProduk({ orders }: { orders: OrderRow[] }) {
   const totalRevenue = produkData.reduce((s, p) => s + p.revenue, 0);
 
   return (
-    <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 shadow-sm">
+    <div className="glass p-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
         <div>
-          <h3 className="text-[#EE4D2D] font-semibold text-base">Produk Terlaku</h3>
-          <p className="text-[#999999] text-xs mt-0.5">
+          <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-semibold text-base">Produk Terlaku</h3>
+          <p className="text-[#6B6B78] text-xs mt-0.5">
             {produkData.length} produk &middot; {formatNumber(totalOrders)} orders &middot; {formatRupiah(totalRevenue)}
           </p>
         </div>
@@ -93,8 +93,8 @@ export default function TopProduk({ orders }: { orders: OrderRow[] }) {
               onClick={() => setPeriod(p)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                 period === p
-                  ? "bg-[#EE4D2D] text-white"
-                  : "bg-white text-[#666666] border border-[#E8E8E8] hover:border-[#EE4D2D]/50"
+                  ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] text-[#0A0A0F]"
+                  : "text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30"
               }`}
             >
               {PERIOD_LABELS[p]}
@@ -107,11 +107,11 @@ export default function TopProduk({ orders }: { orders: OrderRow[] }) {
         <div className="mb-5">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={produkData.slice(0, 10)} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" horizontal={false} />
-              <XAxis type="number" tick={{ fill: "#999999", fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+              <XAxis type="number" tick={{ fill: "#6B6B78", fontSize: 11 }} />
               <YAxis
                 type="category" dataKey="name" width={160}
-                tick={{ fill: "#333333", fontSize: 11 }}
+                tick={{ fill: "#9B9BA8", fontSize: 11 }}
                 tickFormatter={(v: string) => v.length > 22 ? v.slice(0, 22) + "..." : v}
               />
               <Tooltip
@@ -131,35 +131,35 @@ export default function TopProduk({ orders }: { orders: OrderRow[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#E8E8E8]">
-              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs w-12">#</th>
-              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Produk</th>
-              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">Orders</th>
-              <th className="text-right py-2 px-2 text-[#999999] font-medium text-xs">Revenue</th>
-              <th className="text-right py-2 px-2 text-[#999999] font-medium text-xs">%</th>
+            <tr className="border-b border-[rgba(255,255,255,0.06)]">
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs w-12">#</th>
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Produk</th>
+              <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">Orders</th>
+              <th className="text-right py-2 px-2 text-[#6B6B78] font-medium text-xs">Revenue</th>
+              <th className="text-right py-2 px-2 text-[#6B6B78] font-medium text-xs">%</th>
             </tr>
           </thead>
           <tbody>
             {produkData.slice(0, 20).map((p, i) => (
               <tr
                 key={p.name}
-                className={`border-b border-[#E8E8E8]/50 ${
-                  i % 2 === 0 ? "bg-white" : "bg-[#FFF9F8]"
-                } hover:bg-[#FFF0ED] transition-colors`}
+                className={`border-b border-[rgba(255,255,255,0.06)] ${
+                  i % 2 === 0 ? "bg-transparent" : "bg-[rgba(255,255,255,0.02)]"
+                } hover:bg-[rgba(255,255,255,0.04)] transition-colors`}
               >
                 <td className="py-2 px-2 text-sm">
-                  {i < 3 ? RANK_BADGES[i + 1] : <span className="text-[#999999] text-xs">{i + 1}</span>}
+                  {i < 3 ? RANK_BADGES[i + 1] : <span className="text-[#6B6B78] text-xs">{i + 1}</span>}
                 </td>
-                <td className="py-2 px-2 text-xs font-medium text-[#333333]">{p.name}</td>
-                <td className="py-2 px-2 text-xs text-center font-bold text-[#333333]">{p.orders}</td>
-                <td className="py-2 px-2 text-xs text-right text-[#EE4D2D] font-medium">{formatRupiah(p.revenue)}</td>
-                <td className="py-2 px-2 text-xs text-right text-[#999999]">{p.pct.toFixed(1)}%</td>
+                <td className="py-2 px-2 text-xs font-medium text-[#E8E6E3]">{p.name}</td>
+                <td className="py-2 px-2 text-xs text-center font-bold text-[#E8E6E3]">{p.orders}</td>
+                <td className="py-2 px-2 text-xs text-right text-[#F5A623] font-medium">{formatRupiah(p.revenue)}</td>
+                <td className="py-2 px-2 text-xs text-right text-[#9B9BA8]">{p.pct.toFixed(1)}%</td>
               </tr>
             ))}
           </tbody>
         </table>
         {produkData.length === 0 && (
-          <p className="text-[#999999] text-xs text-center py-4">Tidak ada data produk untuk periode ini</p>
+          <p className="text-[#6B6B78] text-xs text-center py-4">Tidak ada data produk untuk periode ini</p>
         )}
       </div>
     </div>

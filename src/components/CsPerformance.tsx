@@ -5,9 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatRupiah, formatNumber } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 
-const COLORS = ["#EE4D2D", "#FF6E4A", "#FF9A7B", "#D73211", "#2EA88A", "#4A90D9", "#8B5CF6", "#F59E0B", "#06B6D4", "#EC4899"];
+const COLORS = ["#F5A623", "#F0C040", "#22C55E", "#4A90D9", "#8B5CF6", "#06B6D4", "#EC4899", "#FF6E4A", "#2EA88A", "#D73211"];
 const tooltipStyle = {
-  contentStyle: { backgroundColor: "#FFFFFF", border: "1px solid #E8E8E8", borderRadius: "8px", color: "#333333", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" },
+  contentStyle: { backgroundColor: "#1A1A25", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#E8E6E3", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" },
 };
 
 interface CsData {
@@ -40,14 +40,16 @@ export default function CsPerformance({ orders }: { orders: OrderRow[] }) {
   const chartData = csData.slice(0, 15);
 
   return (
-    <div className="bg-white border border-[#E8E8E8] rounded-xl p-5 shadow-sm">
+    <div className="glass p-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-        <h3 className="text-[#EE4D2D] font-semibold text-sm">Performance CS</h3>
+        <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-semibold text-sm">Performance CS</h3>
         <div className="flex gap-1.5">
           <button
             onClick={() => setSortBy("total")}
             className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-              sortBy === "total" ? "bg-[#EE4D2D] text-white" : "bg-white text-[#666666] border border-[#E8E8E8]"
+              sortBy === "total"
+                ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] text-[#0A0A0F]"
+                : "text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30"
             }`}
           >
             By Orders
@@ -55,7 +57,9 @@ export default function CsPerformance({ orders }: { orders: OrderRow[] }) {
           <button
             onClick={() => setSortBy("revenue")}
             className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-              sortBy === "revenue" ? "bg-[#EE4D2D] text-white" : "bg-white text-[#666666] border border-[#E8E8E8]"
+              sortBy === "revenue"
+                ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] text-[#0A0A0F]"
+                : "text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30"
             }`}
           >
             By Revenue
@@ -67,9 +71,9 @@ export default function CsPerformance({ orders }: { orders: OrderRow[] }) {
         <div className="mb-5">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} margin={{ bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E8E8" />
-              <XAxis dataKey="name" tick={{ fill: "#999999", fontSize: 10 }} angle={-35} textAnchor="end" interval={0} />
-              <YAxis tick={{ fill: "#999999", fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis dataKey="name" tick={{ fill: "#6B6B78", fontSize: 10 }} angle={-35} textAnchor="end" interval={0} />
+              <YAxis tick={{ fill: "#6B6B78", fontSize: 11 }} />
               <Tooltip
                 {...tooltipStyle}
                 formatter={(value) => {
@@ -88,44 +92,45 @@ export default function CsPerformance({ orders }: { orders: OrderRow[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#E8E8E8]">
-              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs w-8">#</th>
-              <th className="text-left py-2 px-2 text-[#999999] font-medium text-xs">Nama CS</th>
-              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">COD</th>
-              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">TF</th>
-              <th className="text-center py-2 px-2 text-[#999999] font-medium text-xs">Total</th>
-              <th className="text-right py-2 px-2 text-[#999999] font-medium text-xs">Revenue</th>
+            <tr className="border-b border-[rgba(255,255,255,0.06)]">
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs w-8">#</th>
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Nama CS</th>
+              <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">COD</th>
+              <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">TF</th>
+              <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">Total</th>
+              <th className="text-right py-2 px-2 text-[#6B6B78] font-medium text-xs">Revenue</th>
             </tr>
           </thead>
           <tbody>
             {csData.map((cs, i) => (
               <tr
                 key={cs.name}
-                className={`border-b border-[#E8E8E8]/50 ${i % 2 === 0 ? "bg-white" : "bg-[#FFF9F8]"} hover:bg-[#FFF0ED] transition-colors`}
+                className={`border-b border-[rgba(255,255,255,0.06)] ${i % 2 === 0 ? "bg-transparent" : "bg-[rgba(255,255,255,0.02)]"} hover:bg-[rgba(255,255,255,0.04)] transition-colors`}
               >
-                <td className="py-2 px-2 text-xs text-[#999999]">{i + 1}</td>
-                <td className="py-2 px-2 text-xs font-medium text-[#333333]">
-                  {i === 0 && <span className="text-[#EE4D2D] mr-1">&#9733;</span>}
+                <td className="py-2 px-2 text-xs text-[#6B6B78]">
+                  {i === 0 ? "\uD83E\uDD47" : i === 1 ? "\uD83E\uDD48" : i === 2 ? "\uD83E\uDD49" : i + 1}
+                </td>
+                <td className="py-2 px-2 text-xs font-medium text-[#E8E6E3]">
                   {cs.name}
                 </td>
                 <td className="py-2 px-2 text-xs text-center">
-                  <span className="bg-[#EE4D2D]/10 text-[#EE4D2D] px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <span className="bg-[#F5A623]/15 text-[#F5A623] px-2 py-0.5 rounded-full text-[10px] font-medium">
                     {cs.cod}
                   </span>
                 </td>
                 <td className="py-2 px-2 text-xs text-center">
-                  <span className="bg-[#2EA88A]/10 text-[#2EA88A] px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <span className="bg-[#22C55E]/15 text-[#22C55E] px-2 py-0.5 rounded-full text-[10px] font-medium">
                     {cs.tf}
                   </span>
                 </td>
-                <td className="py-2 px-2 text-xs text-center font-bold text-[#333333]">{cs.total}</td>
-                <td className="py-2 px-2 text-xs text-right text-[#EE4D2D] font-medium">{formatRupiah(cs.revenue)}</td>
+                <td className="py-2 px-2 text-xs text-center font-bold text-[#E8E6E3]">{cs.total}</td>
+                <td className="py-2 px-2 text-xs text-right text-[#F5A623] font-medium">{formatRupiah(cs.revenue)}</td>
               </tr>
             ))}
           </tbody>
         </table>
         {csData.length === 0 && (
-          <p className="text-[#999999] text-xs text-center py-4">Tidak ada data CS</p>
+          <p className="text-[#6B6B78] text-xs text-center py-4">Tidak ada data CS</p>
         )}
       </div>
     </div>

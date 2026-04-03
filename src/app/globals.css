@@ -1,28 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #EE4D2D;
-  --primary-light: #FF6E4A;
-  --primary-dark: #D73211;
-  --accent: #FFF0ED;
-  --surface: #FFFFFF;
-  --surface-alt: #FFF9F8;
-  --border: #E8E8E8;
-  --text: #333333;
-  --text-muted: #999999;
-  --bg: #F5F5F5;
+  --bg: #0A0A0F;
+  --bg2: #12121A;
+  --bg3: #1A1A25;
+  --card: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --card-hover: rgba(255,255,255,0.07);
+  --gold: #F5A623;
+  --gold2: #F0C040;
+  --gold-glow: rgba(245,166,35,0.15);
+  --text: #E8E6E3;
+  --text-muted: #6B6B78;
+  --text-dim: #9B9BA8;
+  --border: rgba(255,255,255,0.06);
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --cod: #F5A623;
+  --tf: #22C55E;
 }
 
 @theme inline {
-  --color-primary: var(--primary);
-  --color-primary-light: var(--primary-light);
-  --color-primary-dark: var(--primary-dark);
-  --color-accent: var(--accent);
-  --color-surface: var(--surface);
-  --color-surface-alt: var(--surface-alt);
-  --color-border: var(--border);
-  --color-text: var(--text);
-  --color-text-muted: var(--text-muted);
+  --color-gold: var(--gold);
+  --color-gold2: var(--gold2);
 }
 
 body {
@@ -31,8 +32,31 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
+}
+
+.glass:hover {
+  background: var(--card-hover);
+}
+
+.gold-glow {
+  text-shadow: 0 0 20px rgba(245,166,35,0.4);
+}
+
+.tab-fade-in {
+  animation: tabIn 0.3s ease-out;
+}
+
+@keyframes tabIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

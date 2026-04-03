@@ -13,21 +13,14 @@ export default function KpiCard({ title, value, subtitle, accent, warning, onCli
   return (
     <div
       onClick={onClick}
-      className={`rounded-xl p-5 border shadow-sm ${
-        warning
-          ? "bg-red-50 border-red-200"
-          : accent
-            ? "bg-[#FFF0ED] border-[#EE4D2D]/20"
-            : "bg-white border-[#E8E8E8]"
-      } ${onClick ? "cursor-pointer hover:shadow-md transition-all" : ""}`}
+      className={`glass p-5 ${onClick ? "cursor-pointer" : ""} transition-all duration-200 hover:bg-[rgba(255,255,255,0.06)]`}
+      style={warning ? { borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)" } : undefined}
     >
-      <p className={`text-xs uppercase tracking-wider font-medium ${warning ? "text-red-500" : "text-[#999999]"}`}>{title}</p>
-      <p className={`text-2xl font-bold mt-1 ${warning ? "text-red-500" : accent ? "text-[#EE4D2D]" : "text-[#333333]"}`}>
+      <p className={`text-[11px] uppercase tracking-widest font-medium mb-2 ${warning ? "text-red-400" : "text-[#6B6B78]"}`}>{title}</p>
+      <p className={`text-2xl font-bold ${warning ? "text-red-400" : accent ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent gold-glow" : "text-[#E8E6E3]"}`}>
         {value}
       </p>
-      {subtitle && (
-        <p className="text-[#999999] text-xs mt-1">{subtitle}</p>
-      )}
+      {subtitle && <p className="text-[#6B6B78] text-xs mt-1.5">{subtitle}</p>}
     </div>
   );
 }
