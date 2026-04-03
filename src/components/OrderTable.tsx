@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { formatRupiah } from "@/lib/utils";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { formatRupiah, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 
 interface Props {
@@ -16,7 +18,7 @@ export default function OrderTable({ orders }: Props) {
   const grups = useMemo(() => [...new Set(orders.map((o) => o.grup))].sort(), [orders]);
 
   const filtered = useMemo(() => {
-    return orders.filter((o) => {
+    const result = orders.filter((o) => {
       if (filterTipe !== "ALL" && o.tipe !== filterTipe) return false;
       if (filterGrup !== "ALL" && o.grup !== filterGrup) return false;
       if (search) {
@@ -30,6 +32,12 @@ export default function OrderTable({ orders }: Props) {
         );
       }
       return true;
+    });
+    return result.sort((a, b) => {
+      const da = parseDate(a.tanggal);
+      const db = parseDate(b.tanggal);
+      if (!da || !db) return 0;
+      return db.getTime() - da.getTime();
     });
   }, [orders, search, filterTipe, filterGrup]);
 
@@ -85,26 +93,47 @@ export default function OrderTable({ orders }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filtered.slice(0, 100).map((o, i) => (
-              <tr key={`${o.grup}-${o.no}-${i}`} className={`border-b border-[#2a3a5c]/50 ${i % 2 === 0 ? "bg-[#141e38]" : "bg-[#1a2547]/30"} hover:bg-[#243360]/50 transition-colors`}>
-                <td className="py-2 px-2 text-xs whitespace-nowrap">{o.tanggal}</td>
-                <td className="py-2 px-2 text-xs">{o.grup}</td>
-                <td className="py-2 px-2 text-xs">{o.namaCs}</td>
-                <td className="py-2 px-2 text-xs">{o.produk}</td>
-                <td className="py-2 px-2 text-xs text-right">{formatRupiah(o.hargaJual)}</td>
-                <td className="py-2 px-2 text-xs text-right font-medium text-[#d9a84e]">{formatRupiah(o.total)}</td>
-                <td className="py-2 px-2 text-xs">{o.namaCustomer}</td>
-                <td className="py-2 px-2 text-xs text-center">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    o.tipe === "COD"
-                      ? "bg-[#e07040]/20 text-[#e07040]"
-                      : "bg-[#2ea88a]/20 text-[#2ea88a]"
-                  }`}>
-                    {o.tipe}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {(() => {
+              const sliced = filtered.slice(0, 100);
+              let lastDateKey = "";
+              const rows: React.ReactNode[] = [];
+              sliced.forEach((o, i) => {
+                const d = parseDate(o.tanggal);
+                const dateKey = d ? format(d, "yyyy-MM-dd") : o.tanggal.split(" ")[0];
+                if (dateKey !== lastDateKey) {
+                  const label = d ? format(d, "dd MMMM yyyy", { locale: id }) : dateKey;
+                  rows.push(
+                    <tr key={`date-${dateKey}`} className="bg-[#1e2d50]">
+                      <td colSpan={8} className="py-2 px-3 text-xs font-semibold text-[#d9a84e] tracking-wide">
+                        {"\uD83D\uDCC5"} {label}
+                      </td>
+                    </tr>
+                  );
+                  lastDateKey = dateKey;
+                }
+                rows.push(
+                  <tr key={`${o.grup}-${o.no}-${i}`} className={`border-b border-[#2a3a5c]/50 ${i % 2 === 0 ? "bg-[#141e38]" : "bg-[#1a2547]/30"} hover:bg-[#243360]/50 transition-colors`}>
+                    <td className="py-2 px-2 text-xs whitespace-nowrap">{o.tanggal}</td>
+                    <td className="py-2 px-2 text-xs">{o.grup}</td>
+                    <td className="py-2 px-2 text-xs">{o.namaCs}</td>
+                    <td className="py-2 px-2 text-xs">{o.produk}</td>
+                    <td className="py-2 px-2 text-xs text-right">{formatRupiah(o.hargaJual)}</td>
+                    <td className="py-2 px-2 text-xs text-right font-medium text-[#d9a84e]">{formatRupiah(o.total)}</td>
+                    <td className="py-2 px-2 text-xs">{o.namaCustomer}</td>
+                    <td className="py-2 px-2 text-xs text-center">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        o.tipe === "COD"
+                          ? "bg-[#e07040]/20 text-[#e07040]"
+                          : "bg-[#2ea88a]/20 text-[#2ea88a]"
+                      }`}>
+                        {o.tipe}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              });
+              return rows;
+            })()}
           </tbody>
         </table>
         {filtered.length > 100 && (
