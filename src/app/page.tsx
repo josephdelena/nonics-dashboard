@@ -66,6 +66,7 @@ export default function Home() {
   const grossRevenue = filtered.reduce((s, o) => s + o.total, 0);
   const rtsOrders = filtered.filter((o) => o.status === "RTS");
   const rtsRevenue = rtsOrders.reduce((s, o) => s + o.total, 0);
+  const dupOrders = filtered.filter((o) => o.status === "DUPLIKAT");
   const netRevenue = grossRevenue - rtsRevenue;
   const codOrders = filtered.filter((o) => o.tipe === "COD");
   const tfOrders = filtered.filter((o) => o.tipe === "TF");
@@ -154,10 +155,11 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
           <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
           <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
+          <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} />
           <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
           <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
           <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />

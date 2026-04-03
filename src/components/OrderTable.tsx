@@ -14,7 +14,7 @@ export default function OrderTable({ orders }: Props) {
   const [search, setSearch] = useState("");
   const [filterTipe, setFilterTipe] = useState<"ALL" | "COD" | "TF">("ALL");
   const [filterGrup, setFilterGrup] = useState("ALL");
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "Sukses" | "RTS">("ALL");
+  const [filterStatus, setFilterStatus] = useState<"ALL" | "Sukses" | "RTS" | "DUPLIKAT">("ALL");
 
   const grups = useMemo(() => [...new Set(orders.map((o) => o.grup))].sort(), [orders]);
 
@@ -77,12 +77,13 @@ export default function OrderTable({ orders }: Props) {
         </select>
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS")}
+          onChange={(e) => setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS" | "DUPLIKAT")}
           className="bg-[#1a2547] border border-[#2a3a5c] rounded-lg px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#d9a84e]"
         >
           <option value="ALL">Semua Status</option>
           <option value="Sukses">Sukses</option>
           <option value="RTS">RTS</option>
+          <option value="DUPLIKAT">Duplikat</option>
         </select>
       </div>
 
@@ -145,7 +146,9 @@ export default function OrderTable({ orders }: Props) {
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         o.status === "RTS"
                           ? "bg-red-500/20 text-red-400"
-                          : "bg-emerald-500/20 text-emerald-400"
+                          : o.status === "DUPLIKAT"
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-emerald-500/20 text-emerald-400"
                       }`}>
                         {o.status}
                       </span>

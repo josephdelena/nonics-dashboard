@@ -24,7 +24,7 @@ export interface OrderRow {
   namaCustomer: string;
   noWa: string;
   alamat: string;
-  status: "Sukses" | "RTS";
+  status: "Sukses" | "RTS" | "DUPLIKAT";
   grup: string;
   tipe: "COD" | "TF";
 }
@@ -69,7 +69,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         namaCustomer: row[8] || "",
         noWa: row[9] || "",
         alamat: row[10] || "",
-        status: (row[11] || "Sukses") as "Sukses" | "RTS",
+        status: (row[11] || "Sukses") as "Sukses" | "RTS" | "DUPLIKAT",
         grup: sheetName,
         tipe: tipe as "COD" | "TF",
       });
