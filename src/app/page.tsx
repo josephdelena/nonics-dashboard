@@ -153,14 +153,23 @@ export default function Home() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 py-6">
         {activeTab === "overview" && (
           <div className="tab-fade-in space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3">
-              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent className="lg:col-span-1" />
-              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent className="lg:col-span-2" />
-              <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} className="lg:col-span-1" />
-              <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} className="lg:col-span-1" />
-              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent className="lg:col-span-2" />
-              <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} className="lg:col-span-1" />
-              <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} className="lg:col-span-1" />
+            <div className="hidden lg:grid gap-3" style={{ gridTemplateColumns: "1fr 2.2fr 0.7fr 0.7fr 2.2fr 1fr 1fr" }}>
+              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
+              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
+              <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
+              <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} />
+              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
+              <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
+              <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:hidden">
+              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
+              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
+              <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
+              <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} />
+              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
+              <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
+              <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <CodTfPie data={pieData} />
