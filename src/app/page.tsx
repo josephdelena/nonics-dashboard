@@ -70,14 +70,26 @@ export default function Home() {
 
   const pieData = [{ name: "COD", value: codOrders.length }, { name: "TF", value: tfOrders.length }];
 
-  const grupMap = new Map<string, { orders: number; revenue: number; tipe: "COD" | "TF" }>();
-  for (const o of filtered) { const e = grupMap.get(o.grup) || { orders: 0, revenue: 0, tipe: o.tipe }; e.orders++; e.revenue += o.total; grupMap.set(o.grup, e); }
-  const barData = [...grupMap.entries()].map(([name, d]) => ({ name, orders: d.orders })).sort((a, b) => b.orders - a.orders);
+  const grupMap = new Map<string, { orders: number; revenue: number; cod: number; tf: number; tipe: "COD" | "TF" }>();
+  for (const o of filtered) { const e = grupMap.get(o.grup) || { orders: 0, revenue: 0, cod: 0, tf: 0, tipe: o.tipe }; e.orders++; e.revenue += o.total; if (o.tipe === "COD") e.cod++; else e.tf++; grupMap.set(o.grup, e); }
+  const barData = [...grupMap.entries()].map(([name, d]) => ({ name, cod: d.cod, tf: d.tf, total: d.orders })).sort((a, b) => b.total - a.total);
   const grupBreakdown = [...grupMap.entries()].map(([name, d]) => ({ name, tipe: d.tipe, orders: d.orders, revenue: d.revenue, pctOrders: totalOrders ? (d.orders / totalOrders) * 100 : 0, pctRevenue: grossRevenue ? (d.revenue / grossRevenue) * 100 : 0 }));
 
-  const trendMap = new Map<string, { cod: number; tf: number }>();
-  for (const o of filtered) { if (!o.tanggal) continue; const e = trendMap.get(o.tanggal) || { cod: 0, tf: 0 }; if (o.tipe === "COD") e.cod++; else e.tf++; trendMap.set(o.tanggal, e); }
-  const trendData = [...trendMap.entries()].map(([date, d]) => ({ date, ...d })).sort((a, b) => a.date.localeCompare(b.date));
+  const trendMap = new Map<string, { sales: number; orders: number }>();
+  for (const o of filtered) {
+    if (!o.tanggal) continue;
+    const d = parseDate(o.tanggal);
+    if (!d) continue;
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const e = trendMap.get(key) || { sales: 0, orders: 0 };
+    e.sales += o.total; e.orders++;
+    trendMap.set(key, e);
+  }
+  const allTrend = [...trendMap.entries()].map(([date, d]) => ({ date, ...d })).sort((a, b) => a.date.localeCompare(b.date));
+  const trendData = allTrend.slice(-30);
+  const totalSalesMonth = trendData.reduce((s, d) => s + d.sales, 0);
+  const totalOrdersMonth = trendData.reduce((s, d) => s + d.orders, 0);
+  const avgOrderValue = totalOrdersMonth > 0 ? Math.round(totalSalesMonth / totalOrdersMonth) : 0;
 
   if (loading) {
     return (
@@ -141,20 +153,20 @@ export default function Home() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 py-6">
         {activeTab === "overview" && (
           <div className="tab-fade-in space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
-              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
-              <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
-              <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} />
-              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
-              <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
-              <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3">
+              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent className="lg:col-span-1" />
+              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent className="lg:col-span-2" />
+              <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} className="lg:col-span-1" />
+              <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} className="lg:col-span-1" />
+              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent className="lg:col-span-2" />
+              <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} className="lg:col-span-1" />
+              <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} className="lg:col-span-1" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <CodTfPie data={pieData} />
               <OrdersBarChart data={barData} />
-              <TrendLineChart data={trendData} />
             </div>
+            <TrendLineChart data={trendData} totalSales={totalSalesMonth} totalOrders={totalOrdersMonth} avgOrderValue={avgOrderValue} />
             <GrupBreakdown data={grupBreakdown} />
           </div>
         )}
