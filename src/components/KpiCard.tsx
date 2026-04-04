@@ -25,7 +25,7 @@ export default function KpiCard({ title, value, subtitle, accent, warning, onCli
     >
       <p className={`text-[11px] uppercase tracking-widest font-medium mb-2 ${warning ? "text-red-400" : "text-[#6B6B78]"}`}>{title}</p>
       <p className={`font-bold whitespace-nowrap ${warning ? "text-red-400" : accent ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent gold-glow" : "text-[#E8E6E3]"}`}
-        style={{ fontSize: "clamp(0.95rem, 1.8vw, 1.5rem)" }}>
+        style={{ fontSize: "clamp(0.85rem, 1.4vw, 1.25rem)" }}>
         {value}
       </p>
       {subtitle && <p className="text-[#6B6B78] text-xs mt-1.5">{subtitle}</p>}
