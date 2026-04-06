@@ -1,5 +1,16 @@
 "use client";
 
+// WAITING LIST — FEATURE BACKLOG
+// 1. Target harian per CS dengan progress bar (misal 50 order/hari)
+// 2. Leaderboard CS visual — ranking style, bukan tabel biasa
+// 3. Alert "Belum ada order hari ini" kalau order = 0 sampai jam tertentu
+// 4. RTS breakdown — produk & CS dengan RTS tertinggi
+// 5. Heatmap order per jam — jam berapa paling ramai
+// 6. Login page redesign — lebih premium untuk SaaS
+// 7. Export PDF/Excel rekap harian
+// 8. Notifikasi Telegram anomali otomatis
+// 9. Comparison KPI card — minggu ini vs minggu lalu
+
 import { useState, useEffect, useMemo } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { startOfDay, endOfDay, startOfWeek, startOfMonth, subDays, isAfter, isBefore, parseISO } from "date-fns";
