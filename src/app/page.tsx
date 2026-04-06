@@ -93,10 +93,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)", backgroundImage: "radial-gradient(ellipse at 50% 50%, rgba(245,166,35,0.04) 0%, transparent 60%)" }}>
         <div className="text-center">
-          <div className="w-10 h-10 border-2 border-[#F5A623] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#6B6B78] text-sm">Memuat data...</p>
+          <h1 className="text-xl font-bold tracking-widest mb-6 shimmer-gold">NONICS MANTAP</h1>
+          <div className="spinner-gold mx-auto mb-4" />
+          <p className="text-[#6B6B78] text-xs tracking-[0.15em]">Memuat data...</p>
         </div>
       </div>
     );
