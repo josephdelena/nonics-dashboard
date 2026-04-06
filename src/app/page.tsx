@@ -107,10 +107,14 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-[rgba(255,255,255,0.06)] px-6 py-4 flex items-center justify-between" style={{ background: "var(--bg2)" }}>
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-bold tracking-wider">
-            <span className="text-[#E8E6E3]">NONICS</span>{" "}
-            <span className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent">MANTAP</span>
-          </h1>
+          <div>
+            <h1 className="text-lg font-bold tracking-wider flex items-center gap-2">
+              <div className="w-3 h-3 rotate-45 bg-gradient-to-br from-[#F5A623] to-[#F0C040] shrink-0" />
+              <span className="text-[#E8E6E3]">NONICS</span>{" "}
+              <span className="shimmer-gold">MANTAP</span>
+            </h1>
+            <p className="text-[10px] text-[#6B6B78] tracking-[0.2em] uppercase ml-5">Sales Intelligence Dashboard</p>
+          </div>
           <span className="text-[#6B6B78] text-xs hidden sm:inline">
             {updatedAt && `Updated ${new Date(updatedAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`}
           </span>
