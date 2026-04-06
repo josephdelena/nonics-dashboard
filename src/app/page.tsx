@@ -129,22 +129,20 @@ export default function Home() {
       </header>
 
       {/* Tab Navigation */}
-      <nav className="border-b border-[rgba(255,255,255,0.06)] px-6 flex gap-1" style={{ background: "var(--bg2)" }}>
+      <nav className="border-b border-[rgba(255,255,255,0.06)] px-6 py-2 flex gap-2" style={{ background: "var(--bg2)" }}>
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`px-5 py-3.5 text-sm font-medium transition-all relative ${
+            className={`rounded-full px-4 py-2 text-xs font-medium transition-all ${
               activeTab === t.key
-                ? "text-[#F5A623]"
-                : "text-[#6B6B78] hover:text-[#9B9BA8]"
+                ? "text-[#F5A623] border border-[rgba(245,166,35,0.3)]"
+                : "text-[#6B6B78] border border-transparent hover:bg-[rgba(255,255,255,0.05)]"
             }`}
+            style={activeTab === t.key ? { background: "linear-gradient(135deg, rgba(245,166,35,0.2), rgba(240,192,64,0.1))" } : undefined}
           >
             <span className="mr-1.5">{t.icon}</span>
             {t.label}
-            {activeTab === t.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#F5A623] to-[#F0C040] rounded-full" />
-            )}
           </button>
         ))}
       </nav>
