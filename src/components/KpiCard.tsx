@@ -37,7 +37,7 @@ export default function KpiCard({ title, value, subtitle, accent, warning, onCli
     minWidth: 0,
     flex: flex ?? 1,
     transformStyle: "preserve-3d",
-    transition: "transform 0.15s ease-out",
+    transition: "transform 0.15s ease-out, box-shadow 0.2s ease",
   };
   if (warning) {
     baseStyle.borderColor = "rgba(239,68,68,0.3)";
@@ -49,11 +49,11 @@ export default function KpiCard({ title, value, subtitle, accent, warning, onCli
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`glass p-5 ${onClick ? "cursor-pointer" : ""} hover:bg-[rgba(255,255,255,0.06)] ${className || ""}`}
+      className={`glass-gold p-5 ${onClick ? "cursor-pointer" : ""} hover:bg-[rgba(255,255,255,0.06)] hover:shadow-[0_8px_32px_rgba(245,166,35,0.12)] ${className || ""}`}
       style={baseStyle}
     >
-      <p className={`text-[11px] uppercase tracking-widest font-medium mb-2 ${warning ? "text-red-400" : "text-[#6B6B78]"}`}>{title}</p>
-      <p className={`font-bold ${warning ? "text-red-400" : accent ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent gold-glow" : "text-[#E8E6E3]"}`}
+      <p className={`text-[10px] uppercase tracking-widest font-medium mb-2 ${warning ? "text-red-400" : "text-[#9B9BA8]"}`}>{title}</p>
+      <p className={`font-bold ${warning ? "text-red-400" : accent ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent gold-glow shimmer-gold" : "text-[#E8E6E3]"}`}
         style={{ fontSize: "clamp(0.85rem, 1.4vw, 1.25rem)" }}>
         {value}
       </p>
