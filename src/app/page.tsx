@@ -19,7 +19,6 @@ import { CodTfPie, OrdersBarChart, TrendLineChart } from "@/components/Charts";
 import DateFilter, { type DateRange } from "@/components/DateFilter";
 import GrupBreakdown from "@/components/GrupBreakdown";
 import CsPerformance from "@/components/CsPerformance";
-import RekapCs from "@/components/RekapCs";
 import TopProduk from "@/components/TopProduk";
 import OrderTable from "@/components/OrderTable";
 import RtsBreakdown from "@/components/RtsBreakdown";
@@ -197,7 +196,6 @@ export default function Home() {
 
         {activeTab === "cs" && (
           <div className="tab-fade-in space-y-6">
-            <RekapCs orders={orders} />
             <CsPerformance orders={filtered} />
             <RtsBreakdown orders={orders} />
           </div>
