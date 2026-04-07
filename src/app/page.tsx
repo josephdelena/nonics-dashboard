@@ -22,6 +22,7 @@ import CsPerformance from "@/components/CsPerformance";
 import RekapCs from "@/components/RekapCs";
 import TopProduk from "@/components/TopProduk";
 import OrderTable from "@/components/OrderTable";
+import RtsBreakdown from "@/components/RtsBreakdown";
 import { formatRupiah, formatNumber, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 
@@ -198,6 +199,7 @@ export default function Home() {
           <div className="tab-fade-in space-y-6">
             <RekapCs orders={orders} />
             <CsPerformance orders={filtered} />
+            <RtsBreakdown orders={orders} />
           </div>
         )}
 
