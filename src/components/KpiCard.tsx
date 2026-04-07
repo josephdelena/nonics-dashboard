@@ -57,7 +57,7 @@ export default function KpiCard({ title, value, subtitle, accent, warning, onCli
         style={{ fontSize: "clamp(0.85rem, 1.4vw, 1.25rem)" }}>
         {value}
       </p>
-      {subtitle && <p className="text-[#6B6B78] text-xs mt-1.5">{subtitle}</p>}
+      {subtitle && <p className={`text-xs mt-1.5 ${subtitle.startsWith("▲") ? "text-[#22C55E]" : subtitle.startsWith("▼") ? "text-[#EF4444]" : "text-[#6B6B78]"}`}>{subtitle}</p>}
     </div>
   );
 }

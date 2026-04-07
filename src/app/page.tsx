@@ -79,6 +79,36 @@ export default function Home() {
   const codRevenue = codOrders.reduce((s, o) => s + o.total, 0);
   const tfRevenue = tfOrders.reduce((s, o) => s + o.total, 0);
 
+  // Week-over-week comparison
+  const { prevWeekOrders, prevWeekGross, prevWeekNet } = useMemo(() => {
+    const now = new Date();
+    const from = startOfDay(subDays(now, 14));
+    const to = endOfDay(subDays(now, 7));
+    const prev = orders.filter((o) => { const d = parseDate(o.tanggal); if (!d) return false; return !isBefore(d, from) && !isAfter(d, to); });
+    const prevGross = prev.reduce((s, o) => s + o.total, 0);
+    const prevRts = prev.filter((o) => o.status === "RTS").reduce((s, o) => s + o.total, 0);
+    return { prevWeekOrders: prev.length, prevWeekGross: prevGross, prevWeekNet: prevGross - prevRts };
+  }, [orders]);
+
+  const thisWeekOrders = useMemo(() => {
+    const now = new Date();
+    const from = startOfDay(subDays(now, 7));
+    return orders.filter((o) => { const d = parseDate(o.tanggal); if (!d) return false; return !isBefore(d, from); });
+  }, [orders]);
+  const thisWeekGross = thisWeekOrders.reduce((s, o) => s + o.total, 0);
+  const thisWeekRts = thisWeekOrders.filter((o) => o.status === "RTS").reduce((s, o) => s + o.total, 0);
+  const thisWeekNet = thisWeekGross - thisWeekRts;
+
+  function wowLabel(current: number, prev: number): string {
+    if (prev === 0) return "";
+    const pct = ((current - prev) / prev * 100).toFixed(1);
+    return Number(pct) >= 0 ? `▲ ${pct}% vs minggu lalu` : `▼ ${Math.abs(Number(pct)).toFixed(1)}% vs minggu lalu`;
+  }
+
+  const wowOrders = wowLabel(thisWeekOrders.length, prevWeekOrders);
+  const wowGross = wowLabel(thisWeekGross, prevWeekGross);
+  const wowNet = wowLabel(thisWeekNet, prevWeekNet);
+
   const pieData = [{ name: "COD", value: codOrders.length }, { name: "TF", value: tfOrders.length }];
 
   const grupMap = new Map<string, { orders: number; revenue: number; cod: number; tf: number; tipe: "COD" | "TF" }>();
@@ -168,20 +198,20 @@ export default function Home() {
         {activeTab === "overview" && (
           <div className="tab-fade-in space-y-6">
             <div className="hidden lg:flex gap-3">
-              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent flex={1} />
-              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent flex={2} />
+              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} subtitle={wowOrders} accent flex={1} />
+              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} subtitle={wowGross} accent flex={2} />
               <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} flex={0.6} />
               <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} flex={0.6} />
-              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent flex={2} />
+              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} subtitle={wowNet} accent flex={2} />
               <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} flex={1} />
               <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} flex={1} />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:hidden">
-              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} accent />
-              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} accent />
+              <KpiCard title="Total Orders" value={formatNumber(totalOrders)} subtitle={wowOrders} accent />
+              <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} subtitle={wowGross} accent />
               <KpiCard title="RTS" value={formatNumber(rtsOrders.length)} subtitle={formatRupiah(rtsRevenue)} />
               <KpiCard title="Duplikat" value={formatNumber(dupOrders.length)} warning={dupOrders.length > 0} onClick={dupOrders.length > 0 ? () => setShowDupModal(true) : undefined} />
-              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} accent />
+              <KpiCard title="Net Sales" value={formatRupiah(netRevenue)} subtitle={wowNet} accent />
               <KpiCard title="COD" value={formatNumber(codOrders.length)} subtitle={formatRupiah(codRevenue)} />
               <KpiCard title="TF" value={formatNumber(tfOrders.length)} subtitle={formatRupiah(tfRevenue)} />
             </div>
