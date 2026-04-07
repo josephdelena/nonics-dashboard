@@ -134,11 +134,13 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)", backgroundImage: "radial-gradient(ellipse at 50% 50%, rgba(245,166,35,0.04) 0%, transparent 60%)" }}>
-        <div className="text-center">
-          <h1 className="text-xl font-bold tracking-widest mb-6 shimmer-gold">NONICS MANTAP</h1>
-          <div className="spinner-gold mx-auto mb-4" />
-          <p className="text-[#6B6B78] text-xs tracking-[0.15em]">Memuat data...</p>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: "var(--bg)" }}>
+        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full opacity-100 pointer-events-none" style={{ background: "radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
+        <div className="absolute top-[35%] left-[25%] w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(239,68,68,0.05) 0%, transparent 70%)", filter: "blur(60px)" }} />
+        <div className="text-center relative z-10">
+          <h1 className="text-2xl font-bold tracking-widest mb-8 shimmer-gold">NONICS MANTAP</h1>
+          <div className="spinner-gold mx-auto mb-5" />
+          <p className="text-xs tracking-[0.2em] uppercase" style={{ color: "var(--text-muted)" }}>Memuat data...</p>
         </div>
       </div>
     );
@@ -147,17 +149,17 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
       {/* Header */}
-      <header className="border-b border-[rgba(255,255,255,0.06)] px-6 py-4 flex items-center justify-between" style={{ background: "var(--bg2)" }}>
+      <header className="border-b border-[rgba(245,166,35,0.06)] px-6 py-4 flex items-center justify-between backdrop-blur-[24px]" style={{ background: "rgba(6,6,11,0.7)" }}>
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-lg font-bold tracking-wider flex items-center gap-2">
-              <div className="w-3 h-3 rotate-45 bg-gradient-to-br from-[#F5A623] to-[#F0C040] shrink-0" />
-              <span className="text-[#E8E6E3]">NONICS</span>{" "}
+            <h1 className="text-lg font-bold tracking-wider flex items-center gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-[#EF4444] shrink-0" style={{ boxShadow: "0 0 12px rgba(239,68,68,0.7)" }} />
+              <span className="text-[#F0EDE8]">NONICS</span>{" "}
               <span className="shimmer-gold">MANTAP</span>
             </h1>
-            <p className="text-[10px] text-[#6B6B78] tracking-[0.2em] uppercase ml-5">Sales Intelligence Dashboard</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase ml-[18px]" style={{ color: "var(--text-muted)" }}>Sales Intelligence Dashboard</p>
           </div>
-          <span className="text-[#6B6B78] text-xs hidden sm:inline">
+          <span className="text-xs hidden sm:inline" style={{ color: "var(--text-muted)" }}>
             {updatedAt && `Updated ${new Date(updatedAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`}
           </span>
         </div>
@@ -165,8 +167,8 @@ export default function Home() {
           <DateFilter range={dateRange} customFrom={customFrom} customTo={customTo} onRangeChange={setDateRange} onCustomFromChange={setCustomFrom} onCustomToChange={setCustomTo} />
           {session?.user && (
             <>
-              <span className="text-[#6B6B78] text-xs hidden md:inline">{session.user.email}</span>
-              <button onClick={() => signOut()} className="px-3 py-1.5 rounded-lg text-xs text-[#6B6B78] border border-[rgba(255,255,255,0.1)] hover:border-[#F5A623]/40 hover:text-[#F5A623] transition-all">
+              <span className="text-xs hidden md:inline" style={{ color: "var(--text-muted)" }}>{session.user.email}</span>
+              <button onClick={() => signOut()} className="px-3 py-1.5 rounded-[10px] text-xs border border-[rgba(255,255,255,0.08)] hover:border-[rgba(245,166,35,0.3)] hover:text-[#F5A623] transition-all" style={{ color: "var(--text-muted)" }}>
                 Logout
               </button>
             </>
@@ -175,17 +177,17 @@ export default function Home() {
       </header>
 
       {/* Tab Navigation */}
-      <nav className="border-b border-[rgba(255,255,255,0.06)] px-6 py-2 flex gap-2" style={{ background: "var(--bg2)" }}>
+      <nav className="border-b border-[rgba(245,166,35,0.06)] px-6 py-2.5 flex gap-2 backdrop-blur-[20px]" style={{ background: "rgba(6,6,11,0.5)" }}>
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`rounded-full px-4 py-2 text-xs font-medium transition-all ${
+            className={`rounded-full px-5 py-2 text-xs font-medium transition-all ${
               activeTab === t.key
-                ? "text-[#F5A623] border border-[rgba(245,166,35,0.3)]"
-                : "text-[#6B6B78] border border-transparent hover:bg-[rgba(255,255,255,0.05)]"
+                ? "text-[#F5A623] border border-[rgba(245,166,35,0.25)]"
+                : "border border-transparent hover:bg-[rgba(255,255,255,0.04)]"
             }`}
-            style={activeTab === t.key ? { background: "linear-gradient(135deg, rgba(245,166,35,0.2), rgba(240,192,64,0.1))" } : undefined}
+            style={activeTab === t.key ? { background: "linear-gradient(135deg, rgba(245,166,35,0.15), rgba(240,192,64,0.06))" } : { color: "var(--text-muted)" }}
           >
             <span className="mr-1.5">{t.icon}</span>
             {t.label}

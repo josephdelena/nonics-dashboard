@@ -51,7 +51,7 @@ export default function OrderTable({ orders }: Props) {
   const resetPage = () => setPage(1);
 
   return (
-    <div className="glass p-5">
+    <div className="glass-gold p-5">
       <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-semibold text-sm mb-4">Detail Orders</h3>
 
       {/* Filters */}
@@ -61,12 +61,12 @@ export default function OrderTable({ orders }: Props) {
           placeholder="Cari nama, produk, CS, alamat..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); resetPage(); }}
-          className="flex-1 bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] placeholder-[#6B6B78] focus:outline-none focus:border-[#F5A623]/50"
+          className="flex-1 bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-3 py-2 text-sm text-[#F0EDE8] placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(245,166,35,0.3)]"
         />
         <select
           value={filterTipe}
           onChange={(e) => { setFilterTipe(e.target.value as "ALL" | "COD" | "TF"); resetPage(); }}
-          className="bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50"
+          className="bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-3 py-2 text-sm text-[#F0EDE8] focus:outline-none focus:border-[rgba(245,166,35,0.3)]"
         >
           <option value="ALL">Semua Tipe</option>
           <option value="COD">COD</option>
@@ -75,7 +75,7 @@ export default function OrderTable({ orders }: Props) {
         <select
           value={filterGrup}
           onChange={(e) => { setFilterGrup(e.target.value); resetPage(); }}
-          className="bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50"
+          className="bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-3 py-2 text-sm text-[#F0EDE8] focus:outline-none focus:border-[rgba(245,166,35,0.3)]"
         >
           <option value="ALL">Semua Grup</option>
           {grups.map((g) => (
@@ -85,7 +85,7 @@ export default function OrderTable({ orders }: Props) {
         <select
           value={filterStatus}
           onChange={(e) => { setFilterStatus(e.target.value as "ALL" | "Sukses" | "RTS" | "DUPLIKAT"); resetPage(); }}
-          className="bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50"
+          className="bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-3 py-2 text-sm text-[#F0EDE8] focus:outline-none focus:border-[rgba(245,166,35,0.3)]"
         >
           <option value="ALL">Semua Status</option>
           <option value="Sukses">Sukses</option>
@@ -94,7 +94,7 @@ export default function OrderTable({ orders }: Props) {
         </select>
       </div>
 
-      <p className="text-[#6B6B78] text-xs mb-3">{filtered.length} orders ditampilkan</p>
+      <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>{filtered.length} orders ditampilkan</p>
 
       {/* Table */}
       <div className="overflow-x-auto">

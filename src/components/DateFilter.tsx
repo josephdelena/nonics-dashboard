@@ -28,11 +28,12 @@ export default function DateFilter({ range, customFrom, customTo, onRangeChange,
           <button
             key={b.value}
             onClick={() => onRangeChange(b.value)}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-[10px] text-[11px] font-medium transition-all ${
               range === b.value
-                ? "bg-gradient-to-r from-[#F5A623] to-[#F0C040] text-[#0A0A0F]"
-                : "text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30 hover:text-[#F5A623]"
+                ? "text-[#06060B] border border-transparent"
+                : "border border-[rgba(255,255,255,0.06)] hover:border-[rgba(245,166,35,0.25)] hover:text-[#F5A623]"
             }`}
+            style={range === b.value ? { background: "linear-gradient(135deg, #F5A623, #F0C040)" } : { color: "var(--text-muted)" }}
           >
             {b.label}
           </button>
@@ -41,10 +42,10 @@ export default function DateFilter({ range, customFrom, customTo, onRangeChange,
       {range === "custom" && (
         <div className="flex gap-2 items-center">
           <input type="date" value={customFrom} onChange={(e) => onCustomFromChange(e.target.value)}
-            className="bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1.5 text-xs text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]" />
-          <span className="text-[#6B6B78] text-xs">&mdash;</span>
+            className="bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-2.5 py-1.5 text-xs text-[#F0EDE8] focus:outline-none focus:border-[rgba(245,166,35,0.3)]" />
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>&mdash;</span>
           <input type="date" value={customTo} onChange={(e) => onCustomToChange(e.target.value)}
-            className="bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2 py-1.5 text-xs text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]" />
+            className="bg-[rgba(255,255,255,0.025)] border border-[rgba(245,166,35,0.1)] rounded-[10px] px-2.5 py-1.5 text-xs text-[#F0EDE8] focus:outline-none focus:border-[rgba(245,166,35,0.3)]" />
         </div>
       )}
     </div>

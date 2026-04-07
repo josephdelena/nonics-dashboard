@@ -20,7 +20,7 @@ const PERIOD_LABELS: Record<Period, string> = {
 const COLORS = ["#F5A623", "#F0C040", "#22C55E", "#4A90D9", "#8B5CF6", "#06B6D4", "#EC4899", "#FF6E4A", "#2EA88A", "#D73211"];
 const RANK_BADGES = ["", "\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49"];
 const tooltipStyle = {
-  contentStyle: { backgroundColor: "#1A1A25", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#E8E6E3", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" },
+  contentStyle: { backgroundColor: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: "12px", color: "#F0EDE8", boxShadow: "0 20px 60px rgba(0,0,0,0.8)" },
 };
 
 interface ProdukRow {
@@ -78,7 +78,7 @@ export default function TopProduk({ orders }: { orders: OrderRow[] }) {
   const totalRevenue = produkData.reduce((s, p) => s + p.revenue, 0);
 
   return (
-    <div className="glass p-5">
+    <div className="glass-gold p-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
         <div>
           <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-semibold text-base">Produk Terlaku</h3>

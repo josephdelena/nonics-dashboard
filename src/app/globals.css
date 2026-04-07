@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0A0A0F;
-  --bg2: #12121A;
-  --bg3: #1A1A25;
-  --card: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.08);
-  --card-hover: rgba(255,255,255,0.07);
+  --bg: #06060B;
+  --bg2: #0C0C14;
+  --bg3: #13131E;
+  --card: rgba(255,255,255,0.025);
+  --card-border: rgba(245,166,35,0.08);
+  --card-hover: rgba(245,166,35,0.04);
   --gold: #F5A623;
   --gold2: #F0C040;
   --gold-glow: rgba(245,166,35,0.15);
-  --text: #E8E6E3;
-  --text-muted: #6B6B78;
+  --red: #EF4444;
+  --red2: #F87171;
+  --cyan: #06B6D4;
+  --cyan2: #22D3EE;
+  --text: #F0EDE8;
+  --text-muted: rgba(255,255,255,0.35);
   --text-dim: #9B9BA8;
-  --border: rgba(255,255,255,0.06);
+  --border: rgba(245,166,35,0.06);
   --success: #22C55E;
   --warning: #F59E0B;
   --danger: #EF4444;
@@ -39,10 +43,10 @@ body::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  background-size: 256px 256px;
+  background-size: 128px 128px;
 }
 
 body > * {
@@ -56,43 +60,50 @@ h1, h2, h3, h4, h5, h6 {
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.15); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 .glass {
   background: var(--card);
-  border: 1px solid rgba(245,166,35,0.12);
-  backdrop-filter: blur(16px);
-  border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: background 0.3s, border-color 0.3s, transform 0.2s;
 }
 
 .glass:hover {
   background: var(--card-hover);
+  border-color: rgba(245,166,35,0.15);
 }
 
 .glass-gold {
   background: var(--card);
-  border: 1px solid rgba(245,166,35,0.25);
-  backdrop-filter: blur(16px);
-  border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 40px rgba(245,166,35,0.06);
+  border: 1px solid rgba(245,166,35,0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 60px rgba(245,166,35,0.04);
+  transition: background 0.3s, border-color 0.3s, transform 0.2s, box-shadow 0.3s;
 }
 
 .glass-gold:hover {
   background: var(--card-hover);
+  border-color: rgba(245,166,35,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 80px rgba(245,166,35,0.08);
 }
 
 .gold-glow {
-  text-shadow: 0 0 20px rgba(245,166,35,0.4);
+  text-shadow: 0 0 24px rgba(245,166,35,0.4);
 }
 
 .tab-fade-in {
-  animation: tabIn 0.3s ease-out;
+  animation: tabIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes tabIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -122,4 +133,15 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shimmer 3s linear infinite;
+}
+
+@keyframes blobFloat {
+  0%, 100% { transform: translate(-50%, 0) scale(1); }
+  33% { transform: translate(-45%, -15px) scale(1.04); }
+  66% { transform: translate(-55%, 10px) scale(0.96); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
