@@ -108,6 +108,7 @@ export default function Home() {
   const wowOrders = wowLabel(thisWeekOrders.length, prevWeekOrders);
   const wowGross = wowLabel(thisWeekGross, prevWeekGross);
   const wowNet = wowLabel(thisWeekNet, prevWeekNet);
+  console.log("WoW debug:", thisWeekOrders.length, prevWeekOrders, wowOrders);
 
   const pieData = [{ name: "COD", value: codOrders.length }, { name: "TF", value: tfOrders.length }];
 
