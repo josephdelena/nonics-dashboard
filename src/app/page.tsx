@@ -43,6 +43,8 @@ export default function Home() {
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [showDupModal, setShowDupModal] = useState(false);
+  const [kodeposMeta, setKodeposMeta] = useState<{ kosongCount: number; kosongOrders: string[] }>({ kosongCount: 0, kosongOrders: [] });
+  const [showKodeposModal, setShowKodeposModal] = useState(false);
 
   useEffect(() => {
     fetch("/api/orders")
@@ -53,6 +55,11 @@ export default function Home() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetch("/api/meta-kodepos")
+      .then((res) => res.json())
+      .then((data) => setKodeposMeta({ kosongCount: data.kosongCount || 0, kosongOrders: data.kosongOrders || [] }))
+      .catch(() => {});
   }, []);
 
   const filtered = useMemo(() => {
@@ -197,6 +204,18 @@ export default function Home() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-6 py-6">
         {activeTab === "overview" && (
           <div className="tab-fade-in space-y-6">
+            {kodeposMeta.kosongCount > 0 && (
+              <button
+                onClick={() => setShowKodeposModal(true)}
+                className="w-full text-left rounded-xl px-5 py-3 border border-amber-500/30 transition-all hover:border-amber-500/60 hover:brightness-110"
+                style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))" }}
+              >
+                <span className="text-amber-400 font-semibold text-sm">
+                  ⚠️ {kodeposMeta.kosongCount} order kodepos kosong
+                </span>
+                <span className="text-[#6B6B78] text-xs ml-3">Klik untuk lihat detail</span>
+              </button>
+            )}
             <div className="hidden lg:flex gap-3">
               <KpiCard title="Total Orders" value={formatNumber(totalOrders)} subtitle={wowOrders} accent flex={1} />
               <KpiCard title="Gross Sales" value={formatRupiah(grossRevenue)} subtitle={wowGross} accent flex={2} />
@@ -243,6 +262,29 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Kodepos Kosong Modal */}
+      {showKodeposModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowKodeposModal(false)}>
+          <div className="glass w-full max-w-md max-h-[70vh] overflow-hidden mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-5 py-4 border-b border-[rgba(255,255,255,0.08)]">
+              <h3 className="text-amber-400 font-semibold text-sm">⚠️ Order Kodepos Kosong ({kodeposMeta.kosongCount})</h3>
+              <button onClick={() => setShowKodeposModal(false)} className="text-[#6B6B78] hover:text-white text-lg">&times;</button>
+            </div>
+            <div className="overflow-auto max-h-[calc(70vh-60px)] p-5">
+              <ul className="space-y-2">
+                {kodeposMeta.kosongOrders.map((order, i) => (
+                  <li key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+                    <span className="text-amber-400 text-xs">●</span>
+                    <span className="text-sm text-[#E8E6E3]">{order}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[#6B6B78] text-xs mt-4">Kecamatan tidak ditemukan di database kodepos. Periksa alamat di tab EXCEL NONICS.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Duplikat Modal */}
       {showDupModal && (

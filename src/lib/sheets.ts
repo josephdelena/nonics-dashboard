@@ -35,6 +35,43 @@ function parseNumber(val: string): number {
   return parseInt(cleaned) || 0;
 }
 
+export interface MetaKodepos {
+  totalOrders: number;
+  kosongCount: number;
+  kosongOrders: string[];
+  lastUpdated: string;
+}
+
+export async function fetchMetaKodepos(): Promise<MetaKodepos | null> {
+  const auth = getAuth();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "'Meta'!A1:B100",
+    });
+
+    const rows = res.data.values || [];
+    // Row 0: [title], 1: [Last updated, time], 2: [Total orders, N], 3: [Kodepos OK, N], 4: [Kodepos kosong, N], 5: [], 6: [header], 7+: [Order #N]
+    const lastUpdated = String(rows[1]?.[1] || "");
+    const totalOrders = parseInt(String(rows[2]?.[1] || "0")) || 0;
+    const kosongCount = parseInt(String(rows[4]?.[1] || "0")) || 0;
+
+    const kosongOrders: string[] = [];
+    for (let i = 7; i < rows.length; i++) {
+      const val = rows[i]?.[0] || "";
+      if (val && val !== "(semua terisi)") {
+        kosongOrders.push(val);
+      }
+    }
+
+    return { totalOrders, kosongCount, kosongOrders, lastUpdated };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchAllOrders(): Promise<OrderRow[]> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
