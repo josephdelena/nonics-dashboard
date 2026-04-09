@@ -137,6 +137,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
       // 3. Book only valid packages
       setStatus(`Booking ${validPkgs.length} order...`);
+      console.log("[BOOK] Sender payload:", JSON.stringify({ name: sender.name, kecamatan_id: sender.kecamatan_id, latitude: sender.latitude, longitude: sender.longitude }));
       validPkgs.forEach((p, i) => console.log(`[BOOK] pkg[${i}]: kurir=${orders[i]?.kurir} → service=${p.service} type=${p.service_type} dest_kec=${p.destination_kecamatan_id} cost=${p.shipping_cost}`));
       console.log("[BOOK] Calling /api/kiriminaja/book");
       const data = await fetchWithTimeout("/api/kiriminaja/book", {
