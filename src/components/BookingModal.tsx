@@ -107,7 +107,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
           order_id: `NNC-${Math.floor(Date.now()/1000)}-${String(Math.floor(Math.random()*10000)).padStart(4,"0")}`,
           destination_name: o.namaCustomer, destination_phone: normalizePhone(o.noWa),
           destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
-          weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
+          weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost || 15000,
           service: ki.service, service_type: ki.service_type, cod: o.total || 0,
           item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
         });
