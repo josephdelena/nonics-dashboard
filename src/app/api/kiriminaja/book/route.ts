@@ -128,6 +128,41 @@ export async function POST(req: NextRequest) {
       console.log("[KJ_BOOK] Saving resi to EXCEL NONICS...");
       const auth = getAuth();
       const sheets = google.sheets({ version: "v4", auth });
+
+      // Ensure EXCEL NONICS has at least 14 columns (A-N)
+      try {
+        const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+        const exSheet = meta.data.sheets?.find((s) => s.properties?.title === "EXCEL NONICS");
+        if (exSheet) {
+          const colCount = exSheet.properties?.gridProperties?.columnCount || 0;
+          console.log("[KJ_BOOK] EXCEL NONICS columns:", colCount);
+          if (colCount < 14) {
+            console.log("[KJ_BOOK] Expanding columns to 14...");
+            await sheets.spreadsheets.batchUpdate({
+              spreadsheetId: SPREADSHEET_ID,
+              requestBody: {
+                requests: [{
+                  appendDimension: {
+                    sheetId: exSheet.properties!.sheetId!,
+                    dimension: "COLUMNS",
+                    length: 14 - colCount,
+                  },
+                }],
+              },
+            });
+            // Write header for Resi column
+            await sheets.spreadsheets.values.update({
+              spreadsheetId: SPREADSHEET_ID,
+              range: "'EXCEL NONICS'!N1",
+              valueInputOption: "USER_ENTERED",
+              requestBody: { values: [["Resi"]] },
+            });
+          }
+        }
+      } catch (e) {
+        console.log("[KJ_BOOK] Column check error (non-fatal):", e);
+      }
+
       const batchData: { range: string; values: string[][] }[] = [];
 
       for (let i = 0; i < kjData.details.length; i++) {
