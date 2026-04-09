@@ -28,6 +28,7 @@ export interface OrderRow {
   grup: string;
   tipe: "COD" | "TF";
   sheetRow: number; // 1-indexed row number in the sheet
+  kodepos: string;
 }
 
 function parseNumber(val: string): number {
@@ -111,10 +112,34 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         status: row[11] || "Sukses",
         grup: sheetName,
         tipe: tipe as "COD" | "TF",
-        sheetRow: ri + 2, // +2 because range starts at A2 (row 2) and ri is 0-indexed
+        sheetRow: ri + 2,
+        kodepos: "",
       });
     }
   }
+
+  // Fetch kodepos from EXCEL NONICS tab and merge
+  try {
+    const exRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "'EXCEL NONICS'!C2:H5000", // C=Nama, D=Telepon, H=Kode Pos
+    });
+    const kpMap = new Map<string, string>(); // phone|name → kodepos
+    for (const row of exRes.data.values || []) {
+      const nama = (row[0] || "").toString().trim().toLowerCase();
+      const phone = (row[1] || "").toString().replace(/\D/g, "");
+      const kodepos = (row[5] || "").toString().trim(); // col H = index 5 from C
+      if (kodepos) {
+        if (phone) kpMap.set(`p:${phone}`, kodepos);
+        if (nama) kpMap.set(`n:${nama}`, kodepos);
+      }
+    }
+    for (const o of orders) {
+      const phone = o.noWa.replace(/\D/g, "");
+      const nama = o.namaCustomer.trim().toLowerCase();
+      o.kodepos = (phone && kpMap.get(`p:${phone}`)) || kpMap.get(`n:${nama}`) || "";
+    }
+  } catch { /* EXCEL NONICS tab might not exist yet */ }
 
   return orders;
 }
