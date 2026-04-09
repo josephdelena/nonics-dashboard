@@ -19,6 +19,14 @@ const SENDERS = [
   { label: "Depok Store", name: "Depok Store", phone: "081958718474", address: "Perumahan Palem Ganda Asri Jl. Kijang Raya A2/20 Kel. Meruyung, Limo, Depok", zipcode: "16512", kecamatan_id: 1583 },
 ];
 
+function normalizePhone(raw: string): string {
+  const d = raw.replace(/\D/g, "");
+  if (d.startsWith("62")) return d;
+  if (d.startsWith("0")) return "62" + d.slice(1);
+  if (d.startsWith("8")) return "62" + d;
+  return d;
+}
+
 async function fetchWithTimeout(url: string, body: any): Promise<any> {
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), 10000);
@@ -97,7 +105,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
         packages.push({
           order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
-          destination_name: o.namaCustomer, destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
+          destination_name: o.namaCustomer, destination_phone: normalizePhone(o.noWa),
           destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
           weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
           service: ki.service, service_type: ki.service_type, cod: o.total || 0,
