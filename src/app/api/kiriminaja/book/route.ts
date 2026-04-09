@@ -168,8 +168,8 @@ export async function POST(req: NextRequest) {
       for (let i = 0; i < kjData.details.length; i++) {
         const detail = kjData.details[i];
         const target = resiTargets[i];
-        const awb = detail.awb || detail.kj_order_id || "";
-        console.log(`[KJ_BOOK] Resi ${i}: awb=${awb}, exRow=${target?.exRow}`);
+        const awb = detail.awb || kjData.pickup_number || detail.kj_order_id || "";
+        console.log(`[KJ_BOOK] Resi ${i}: awb=${awb}, pickup=${kjData.pickup_number}, exRow=${target?.exRow}`);
 
         if (target?.exRow > 0) {
           batchData.push({ range: `'EXCEL NONICS'!N${target.exRow}`, values: [[awb]] });
