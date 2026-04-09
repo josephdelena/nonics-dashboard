@@ -12,6 +12,7 @@ interface Props {
 
 export default function OrderTable({ orders }: Props) {
   const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("");
   const [filterTipe, setFilterTipe] = useState<"ALL" | "COD" | "TF">("ALL");
   const [filterGrup, setFilterGrup] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState<"ALL" | "Sukses" | "RTS" | "DUPLIKAT">("ALL");
@@ -22,6 +23,12 @@ export default function OrderTable({ orders }: Props) {
 
   const filtered = useMemo(() => {
     const result = orders.filter((o) => {
+      if (filterDate) {
+        const d = parseDate(o.tanggal);
+        if (!d) return false;
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (dateKey !== filterDate) return false;
+      }
       if (filterTipe !== "ALL" && o.tipe !== filterTipe) return false;
       if (filterGrup !== "ALL" && o.grup !== filterGrup) return false;
       if (filterStatus !== "ALL" && o.status !== filterStatus) return false;
@@ -43,7 +50,7 @@ export default function OrderTable({ orders }: Props) {
       if (!da || !db) return 0;
       return db.getTime() - da.getTime();
     });
-  }, [orders, search, filterTipe, filterGrup, filterStatus]);
+  }, [orders, search, filterDate, filterTipe, filterGrup, filterStatus]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -62,6 +69,12 @@ export default function OrderTable({ orders }: Props) {
           value={search}
           onChange={(e) => { setSearch(e.target.value); resetPage(); }}
           className="flex-1 bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] placeholder-[#6B6B78] focus:outline-none focus:border-[#F5A623]/50"
+        />
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => { setFilterDate(e.target.value); resetPage(); }}
+          className="bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 [&::-webkit-calendar-picker-indicator]:invert"
         />
         <select
           value={filterTipe}
