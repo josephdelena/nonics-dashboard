@@ -398,7 +398,11 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     </div>
   );
 
-  const bookingOrders = orders.filter((o) => selected.has(orderKey(o)));
+  const bookingOrders = orders.filter((o) => selected.has(orderKey(o))).map((o) => {
+    const e = edits.get(orderKey(o));
+    if (!e) return o;
+    return { ...o, ...(e.produk !== undefined && { produk: e.produk }), ...(e.total !== undefined && { total: parseInt(e.total) || o.total }), ...(e.alamat !== undefined && { alamat: e.alamat }), ...(e.status !== undefined && { status: e.status }), ...(e.kodepos !== undefined && { kodepos: e.kodepos }), ...(e.kurir !== undefined && { kurir: e.kurir }) };
+  });
 
   if (showBooking) {
     console.log("[UI] Rendering BookingModal, showBooking:", showBooking, "bookingOrders:", bookingOrders.length, "selected:", selected.size);
