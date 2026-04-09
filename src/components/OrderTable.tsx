@@ -199,7 +199,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const checkboxCls = "w-4 h-4 cursor-pointer accent-[#F5A623]";
   const COL_SPAN = 14;
 
-  return (
+  const tableContent = (
     <div className="glass p-5">
       <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-semibold text-sm mb-4">Detail Orders</h3>
 
@@ -209,7 +209,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
           <span className="text-sm text-[#F5A623] font-semibold">{selected.size} dipilih</span>
           <span className="text-[#6B6B78] text-xs">Edit langsung di baris, lalu klik Simpan</span>
           <div className="flex-1" />
-          <button onClick={() => setShowBooking(true)}
+          <button onClick={() => { console.log("[UI] Kirim button clicked, selected:", selected.size); setShowBooking(true); }}
             className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:brightness-110 transition-all">
             Kirim via KiriminAja
           </button>
@@ -395,14 +395,25 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         )}
       </div>
 
-      {/* KiriminAja Booking Modal */}
+    </div>
+  );
+
+  const bookingOrders = orders.filter((o) => selected.has(orderKey(o)));
+
+  if (showBooking) {
+    console.log("[UI] Rendering BookingModal, showBooking:", showBooking, "bookingOrders:", bookingOrders.length, "selected:", selected.size);
+  }
+
+  return (
+    <>
+      {tableContent}
       {showBooking && (
         <BookingModal
-          orders={orders.filter((o) => selected.has(orderKey(o)))}
-          onClose={() => setShowBooking(false)}
-          onBooked={() => { setSelected(new Set()); setEdits(new Map()); if (onStatusChange) onStatusChange(); }}
+          orders={bookingOrders}
+          onClose={() => { console.log("[UI] Modal onClose"); setShowBooking(false); }}
+          onBooked={() => { console.log("[UI] Modal onBooked"); setSelected(new Set()); setEdits(new Map()); if (onStatusChange) onStatusChange(); }}
         />
       )}
-    </div>
+    </>
   );
 }
