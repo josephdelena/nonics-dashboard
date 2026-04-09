@@ -15,6 +15,18 @@ function getAuth() {
   });
 }
 
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  let phone = digits;
+  if (phone.startsWith("62")) { /* ok */ }
+  else if (phone.startsWith("0")) phone = "62" + phone.slice(1);
+  else if (phone.startsWith("8")) phone = "62" + phone;
+  if (phone.length < 9 || phone.length > 13) {
+    console.log(`[KJ_BOOK] Phone warning: ${raw} → ${phone} (len ${phone.length})`);
+  }
+  return phone;
+}
+
 export async function POST(req: NextRequest) {
   try {
     console.log("[KJ_BOOK] Starting booking...");
@@ -52,6 +64,12 @@ export async function POST(req: NextRequest) {
       }[];
       resiTargets?: { grup: string; sheetRow: number; exRow: number }[];
     };
+
+    // Normalize phones
+    sender.phone = normalizePhone(sender.phone);
+    for (const pkg of packages) {
+      pkg.destination_phone = normalizePhone(pkg.destination_phone);
+    }
 
     console.log("[KJ_BOOK] Sender:", JSON.stringify(sender));
     console.log("[KJ_BOOK] Packages count:", packages.length);
