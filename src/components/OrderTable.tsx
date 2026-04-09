@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { formatRupiah, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
+import BookingModal from "./BookingModal";
 
 type Status = "Sukses" | "RTS" | "DUPLIKAT" | "REPEAT RTS";
 const ALL_STATUSES: Status[] = ["Sukses", "RTS", "DUPLIKAT", "REPEAT RTS"];
@@ -39,6 +40,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [edits, setEdits] = useState<Map<string, RowEdits>>(new Map());
   const [updating, setUpdating] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
 
   const grups = useMemo(() => [...new Set(orders.map((o) => o.grup))].sort(), [orders]);
 
@@ -207,6 +209,10 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
           <span className="text-sm text-[#F5A623] font-semibold">{selected.size} dipilih</span>
           <span className="text-[#6B6B78] text-xs">Edit langsung di baris, lalu klik Simpan</span>
           <div className="flex-1" />
+          <button onClick={() => setShowBooking(true)}
+            className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:brightness-110 transition-all">
+            Kirim via KiriminAja
+          </button>
           <button onClick={handleSave} disabled={updating || !hasChanges}
             className="px-4 py-2 rounded-lg text-xs font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040] hover:brightness-110 disabled:opacity-40 transition-all">
             {updating ? "Menyimpan..." : `Simpan${hasChanges ? "" : " (no changes)"}`}
@@ -388,6 +394,15 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
           </div>
         )}
       </div>
+
+      {/* KiriminAja Booking Modal */}
+      {showBooking && (
+        <BookingModal
+          orders={orders.filter((o) => selected.has(orderKey(o)))}
+          onClose={() => setShowBooking(false)}
+          onBooked={() => { setSelected(new Set()); setEdits(new Map()); if (onStatusChange) onStatusChange(); }}
+        />
+      )}
     </div>
   );
 }

@@ -30,6 +30,8 @@ export interface OrderRow {
   sheetRow: number; // 1-indexed row number in the sheet
   kodepos: string;
   kurir: string;
+  kecamatan: string;
+  resi: string;
   exRow: number; // row in EXCEL NONICS tab (0 = not found)
 }
 
@@ -117,6 +119,8 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         sheetRow: ri + 2,
         kodepos: "",
         kurir: "",
+        kecamatan: "",
+        resi: "",
         exRow: 0,
       });
     }
@@ -127,18 +131,20 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
   try {
     const exRes = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "'EXCEL NONICS'!A2:M5000",
+      range: "'EXCEL NONICS'!A2:N5000",
     });
     // Build lookup: phone/nama → { kodepos, exRow }
-    const kpMap = new Map<string, { kodepos: string; kurir: string; exRow: number }>();
+    const kpMap = new Map<string, { kodepos: string; kurir: string; kecamatan: string; resi: string; exRow: number }>();
     const exRows = exRes.data.values || [];
     for (let ri = 0; ri < exRows.length; ri++) {
       const row = exRows[ri];
       const nama = (row[2] || "").toString().trim().toLowerCase();   // C=Nama
       const phone = (row[3] || "").toString().replace(/\D/g, "");    // D=Telepon
+      const kecamatan = (row[6] || "").toString().trim();            // G=Kecamatan
       const kodepos = (row[7] || "").toString().trim();              // H=Kode Pos
       const kurir = (row[12] || "").toString().trim();               // M=Kurir
-      const entry = { kodepos, kurir, exRow: ri + 2 };
+      const resi = (row[13] || "").toString().trim();                // N=Resi
+      const entry = { kodepos, kurir, kecamatan, resi, exRow: ri + 2 };
       if (phone) kpMap.set(`p:${phone}`, entry);
       if (nama) kpMap.set(`n:${nama}`, entry);
     }
@@ -148,6 +154,8 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
       const match = (phone && kpMap.get(`p:${phone}`)) || kpMap.get(`n:${nama}`);
       o.kodepos = match?.kodepos || "";
       o.kurir = match?.kurir || "";
+      o.kecamatan = match?.kecamatan || "";
+      o.resi = match?.resi || "";
       o.exRow = match?.exRow || 0;
     }
   } catch { /* EXCEL NONICS tab might not exist yet */ }
