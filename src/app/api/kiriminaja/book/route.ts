@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
     if (sender.latitude) kjBody.latitude = sender.latitude;
     if (sender.longitude) kjBody.longitude = sender.longitude;
 
+    const { packages: _pkgs, ...kjBodyRoot } = kjBody;
+    console.log("[KJ_BOOK] REQUEST ROOT:", JSON.stringify(kjBodyRoot));
+    console.log("[KJ_BOOK] REQUEST PACKAGES:", JSON.stringify(_pkgs).slice(0, 1500));
     console.log("[KJ_BOOK] Calling KiriminAja:", `${BASE}/api/mitra/v6.1/request_pickup`);
 
     const controller = new AbortController();
