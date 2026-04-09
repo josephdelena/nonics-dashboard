@@ -59,12 +59,17 @@ export async function POST(req: NextRequest) {
       packages,
     };
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     const res = await fetch(`${BASE}/api/mitra/v6.1/request_pickup`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": API_KEY },
       body: JSON.stringify(kjBody),
+      signal: controller.signal,
     });
 
+    clearTimeout(timeout);
     const kjData = await res.json();
 
     if (!kjData.status) {
@@ -103,6 +108,7 @@ export async function POST(req: NextRequest) {
       details: kjData.details,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    const msg = e.name === "AbortError" ? "Timeout 10s — KiriminAja tidak merespons" : e.message;
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

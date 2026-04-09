@@ -41,22 +41,38 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
   const inputCls = "bg-[#0d0d14] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 w-full";
 
   // Lookup sender kecamatan
-  const searchSenderKec = async () => {
-    if (senderKecSearch.length < 3) return;
-    const res = await fetch("/api/kiriminaja/search-kecamatan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ search: senderKecSearch }),
-    });
-    const data = await res.json();
-    if (data.data) setSenderKecResults(data.data);
+  // Fetch with 10s timeout helper
+  const fetchWithTimeout = async (url: string, body: any): Promise<any> => {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 10000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      clearTimeout(t);
+      return await res.json();
+    } catch (e: any) {
+      clearTimeout(t);
+      return { error: e.name === "AbortError" ? "Timeout" : e.message };
+    }
   };
 
-  // Lookup all destination kecamatan IDs
+  const searchSenderKec = async () => {
+    if (senderKecSearch.length < 3) return;
+    const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: senderKecSearch });
+    if (data.data) setSenderKecResults(data.data);
+    else if (data.error) setError(`Lookup pengirim gagal: ${data.error}`);
+  };
+
+  // Lookup all destination kecamatan IDs — skip failures, don't block
   const lookupDestinations = async () => {
     setLookingUp(true);
     const map = new Map<number, number>();
     const seen = new Map<string, number>();
+    let failed = 0;
 
     for (const o of orders) {
       const kec = o.kecamatan;
@@ -65,22 +81,18 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
         map.set(o.exRow, seen.get(kec.toLowerCase())!);
         continue;
       }
-      try {
-        const res = await fetch("/api/kiriminaja/search-kecamatan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ search: kec }),
-        });
-        const data = await res.json();
-        if (data.data?.[0]?.id) {
-          seen.set(kec.toLowerCase(), data.data[0].id);
-          map.set(o.exRow, data.data[0].id);
-        }
-        await new Promise((r) => setTimeout(r, 300)); // rate limit
-      } catch {}
+      const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
+      if (data.data?.[0]?.id) {
+        seen.set(kec.toLowerCase(), data.data[0].id);
+        map.set(o.exRow, data.data[0].id);
+      } else {
+        failed++;
+      }
+      await new Promise((r) => setTimeout(r, 300));
     }
     setDestKecIds(map);
     setLookingUp(false);
+    if (failed > 0) setError(`${failed} kecamatan tidak ditemukan — order tetap bisa dikirim tanpa kecamatan_id`);
   };
 
   useEffect(() => { lookupDestinations(); }, []);
@@ -118,22 +130,15 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
     const missingKec = packages.filter((p) => !p.destination_kecamatan_id);
     if (missingKec.length > 0) {
-      setError(`${missingKec.length} order belum ada kecamatan_id. Pastikan kecamatan terisi di EXCEL NONICS.`);
-      setBooking(false);
-      return;
+      setError(`${missingKec.length} order tanpa kecamatan_id — akan tetap dikirim, mungkin ditolak oleh KiriminAja`);
     }
 
     try {
-      const res = await fetch("/api/kiriminaja/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sender: { ...sender, kecamatan_id: senderKecId },
-          packages,
-          resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
-        }),
+      const data = await fetchWithTimeout("/api/kiriminaja/book", {
+        sender: { ...sender, kecamatan_id: senderKecId },
+        packages,
+        resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
       });
-      const data = await res.json();
       if (data.success) {
         setResult(data);
       } else {
