@@ -105,7 +105,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
         }
 
         packages.push({
-          order_id: `NNC-${Math.floor(Date.now()/1000)}-${String(Math.floor(Math.random()*10000)).padStart(4,"0")}`,
+          order_id: `NNC-${Math.floor(Date.now()/1000)}${String(i).padStart(2,"0")}`,
           destination_name: o.namaCustomer, destination_phone: normalizePhone(o.noWa),
           destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
           weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost || 15000,
@@ -144,9 +144,16 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
         packages: validPkgs,
         resiTargets: validTargets,
       });
-      console.log("[BOOK] Response:", JSON.stringify(data).slice(0, 300));
+      console.log("[BOOK] Response:", JSON.stringify(data).slice(0, 500));
 
-      if (data.success) { setResult({ ...data, skipped }); } else { setError(data.error || "Booking gagal"); }
+      if (data.success) {
+        setResult({ ...data, skipped });
+      } else {
+        const errMsg = data.error || "Booking gagal";
+        const kjDetail = data.kjData ? ` | KJ: ${JSON.stringify(data.kjData).slice(0, 200)}` : "";
+        console.error("[BOOK] FAILED:", errMsg, kjDetail);
+        setError(errMsg + kjDetail);
+      }
     } catch (e: any) {
       console.error("[BOOK] Error:", e);
       setError(e.message || "Unexpected error");
