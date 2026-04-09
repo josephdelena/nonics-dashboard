@@ -29,6 +29,7 @@ export interface OrderRow {
   tipe: "COD" | "TF";
   sheetRow: number; // 1-indexed row number in the sheet
   kodepos: string;
+  exRow: number; // row in EXCEL NONICS tab (0 = not found)
 }
 
 function parseNumber(val: string): number {
@@ -114,30 +115,36 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         tipe: tipe as "COD" | "TF",
         sheetRow: ri + 2,
         kodepos: "",
+        exRow: 0,
       });
     }
   }
 
   // Fetch kodepos from EXCEL NONICS tab and merge
+  // Also store excelNonicsRow for kodepos editing
   try {
     const exRes = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "'EXCEL NONICS'!C2:H5000", // C=Nama, D=Telepon, H=Kode Pos
+      range: "'EXCEL NONICS'!A2:L5000",
     });
-    const kpMap = new Map<string, string>(); // phone|name → kodepos
-    for (const row of exRes.data.values || []) {
-      const nama = (row[0] || "").toString().trim().toLowerCase();
-      const phone = (row[1] || "").toString().replace(/\D/g, "");
-      const kodepos = (row[5] || "").toString().trim(); // col H = index 5 from C
-      if (kodepos) {
-        if (phone) kpMap.set(`p:${phone}`, kodepos);
-        if (nama) kpMap.set(`n:${nama}`, kodepos);
-      }
+    // Build lookup: phone/nama → { kodepos, exRow }
+    const kpMap = new Map<string, { kodepos: string; exRow: number }>();
+    const exRows = exRes.data.values || [];
+    for (let ri = 0; ri < exRows.length; ri++) {
+      const row = exRows[ri];
+      const nama = (row[2] || "").toString().trim().toLowerCase();   // C=Nama
+      const phone = (row[3] || "").toString().replace(/\D/g, "");    // D=Telepon
+      const kodepos = (row[7] || "").toString().trim();              // H=Kode Pos
+      const entry = { kodepos, exRow: ri + 2 }; // +2: header row 1, 0-indexed
+      if (phone) kpMap.set(`p:${phone}`, entry);
+      if (nama) kpMap.set(`n:${nama}`, entry);
     }
     for (const o of orders) {
       const phone = o.noWa.replace(/\D/g, "");
       const nama = o.namaCustomer.trim().toLowerCase();
-      o.kodepos = (phone && kpMap.get(`p:${phone}`)) || kpMap.get(`n:${nama}`) || "";
+      const match = (phone && kpMap.get(`p:${phone}`)) || kpMap.get(`n:${nama}`);
+      o.kodepos = match?.kodepos || "";
+      o.exRow = match?.exRow || 0;
     }
   } catch { /* EXCEL NONICS tab might not exist yet */ }
 
@@ -164,6 +171,29 @@ export async function updateOrderFields(
       data.push({ range: `'${u.grup}'!${col}${u.sheetRow}`, values: [[value]] });
     }
   }
+
+  if (data.length === 0) return 0;
+
+  const res = await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: { valueInputOption: "USER_ENTERED", data },
+  });
+
+  return res.data.totalUpdatedCells || 0;
+}
+
+export async function updateKodepos(
+  updates: { exRow: number; kodepos: string }[]
+): Promise<number> {
+  const auth = getAuth();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const data = updates
+    .filter((u) => u.exRow > 0)
+    .flatMap((u) => [
+      { range: `'EXCEL NONICS'!H${u.exRow}`, values: [[u.kodepos]] },
+      { range: `'EXCEL NONICS'!L${u.exRow}`, values: [[u.kodepos ? "ok" : "kosong"]] },
+    ]);
 
   if (data.length === 0) return 0;
 

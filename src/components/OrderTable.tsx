@@ -24,7 +24,7 @@ function statusBadge(status: string) {
 }
 
 // Per-row edit state
-interface RowEdits { alamat?: string; status?: string; }
+interface RowEdits { alamat?: string; status?: string; kodepos?: string; }
 
 export default function OrderTable({ orders, onStatusChange }: Props) {
   const [search, setSearch] = useState("");
@@ -83,7 +83,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         paged.forEach((o) => {
           const k = orderKey(o);
           next.add(k);
-          if (!nextEdits.has(k)) nextEdits.set(k, { alamat: o.alamat, status: o.status });
+          if (!nextEdits.has(k)) nextEdits.set(k, { alamat: o.alamat, status: o.status, kodepos: o.kodepos });
         });
       }
       setEdits(nextEdits);
@@ -100,7 +100,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     });
     setEdits((prev) => {
       const next = new Map(prev);
-      if (next.has(k)) { next.delete(k); } else { next.set(k, { alamat: o.alamat, status: o.status }); }
+      if (next.has(k)) { next.delete(k); } else { next.set(k, { alamat: o.alamat, status: o.status, kodepos: o.kodepos }); }
       return next;
     });
   }, []);
@@ -119,7 +119,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       const k = orderKey(o);
       const e = edits.get(k);
       if (!e) continue;
-      if ((e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status)) return true;
+      if ((e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos)) return true;
     }
     return false;
   }, [orders, edits]);
@@ -129,6 +129,8 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     setUpdating(true);
 
     const updates: { grup: string; sheetRow: number; fields: Record<string, string> }[] = [];
+    const kodeposUpdates: { exRow: number; kodepos: string }[] = [];
+
     for (const o of orders) {
       const k = orderKey(o);
       const e = edits.get(k);
@@ -139,15 +141,18 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       if (Object.keys(fields).length > 0) {
         updates.push({ grup: o.grup, sheetRow: o.sheetRow, fields });
       }
+      if (e.kodepos !== undefined && e.kodepos !== o.kodepos && o.exRow > 0) {
+        kodeposUpdates.push({ exRow: o.exRow, kodepos: e.kodepos });
+      }
     }
 
-    if (updates.length === 0) { setUpdating(false); return; }
+    if (updates.length === 0 && kodeposUpdates.length === 0) { setUpdating(false); return; }
 
     try {
       const res = await fetch("/api/orders/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updates }),
+        body: JSON.stringify({ updates: updates.length > 0 ? updates : undefined, kodeposUpdates: kodeposUpdates.length > 0 ? kodeposUpdates : undefined }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -157,6 +162,10 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
             if (u.fields.alamat) (o as any).alamat = u.fields.alamat;
             if (u.fields.status) (o as any).status = u.fields.status;
           }
+        }
+        for (const u of kodeposUpdates) {
+          const o = orders.find((x) => x.exRow === u.exRow);
+          if (o) (o as any).kodepos = u.kodepos;
         }
         setSelected(new Set());
         setEdits(new Map());
@@ -275,8 +284,17 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                         <span className="text-xs text-[#9B9BA8] block max-w-[200px] truncate" title={o.alamat}>{o.alamat}</span>
                       )}
                     </td>
-                    {/* Kode Pos — display only */}
-                    <td className="py-2 px-2 text-xs text-center text-[#9B9BA8]">{o.kodepos || <span className="text-[#6B6B78]">—</span>}</td>
+                    {/* Kode Pos — editable when checked */}
+                    <td className="py-1 px-2 text-center">
+                      {isChecked ? (
+                        <input type="text" value={rowEdit?.kodepos ?? o.kodepos}
+                          onChange={(e) => setEdit(key, "kodepos", e.target.value)}
+                          placeholder="—"
+                          className={`${cellInputCls} text-center w-20`} />
+                      ) : (
+                        <span className="text-xs text-[#9B9BA8]">{o.kodepos || <span className="text-[#6B6B78]">—</span>}</span>
+                      )}
+                    </td>
                     <td className="py-2 px-2 text-xs text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${o.tipe === "COD" ? "bg-[#F5A623]/15 text-[#F5A623]" : "bg-[#22C55E]/15 text-[#22C55E]"}`}>{o.tipe}</span>
                     </td>
