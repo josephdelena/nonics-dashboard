@@ -15,7 +15,7 @@ const KURIR_MAP: Record<string, { service: string; service_type: string }> = {
 };
 
 const SENDERS = [
-  { label: "Nonics Makassar", name: "Nonics", phone: "085272127441", address: "Jl. Perintis Kemerdekaan KM 12, Makassar", zipcode: "90244", kecamatan_id: 3596 },
+  { label: "Nonics Makassar", name: "Nonics", phone: "081958718474", address: "Jl. Perintis Kemerdekaan KM 12, Makassar", zipcode: "90244", kecamatan_id: 3596 },
   { label: "Depok Store", name: "Depok Store", phone: "081958718474", address: "Perumahan Palem Ganda Asri Jl. Kijang Raya A2/20 Kel. Meruyung, Limo, Depok", zipcode: "16512", kecamatan_id: 1583 },
 ];
 
