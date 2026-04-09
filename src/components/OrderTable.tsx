@@ -24,7 +24,7 @@ function statusBadge(status: string) {
 }
 
 // Per-row edit state
-interface RowEdits { produk?: string; total?: string; alamat?: string; status?: string; kodepos?: string; }
+interface RowEdits { produk?: string; total?: string; alamat?: string; status?: string; kodepos?: string; kurir?: string; }
 
 export default function OrderTable({ orders, onStatusChange }: Props) {
   const [search, setSearch] = useState("");
@@ -85,7 +85,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         paged.forEach((o) => {
           const k = orderKey(o);
           next.add(k);
-          if (!nextEdits.has(k)) nextEdits.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos });
+          if (!nextEdits.has(k)) nextEdits.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir });
         });
       }
       setEdits(nextEdits);
@@ -102,7 +102,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     });
     setEdits((prev) => {
       const next = new Map(prev);
-      if (next.has(k)) { next.delete(k); } else { next.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos }); }
+      if (next.has(k)) { next.delete(k); } else { next.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir }); }
       return next;
     });
   }, []);
@@ -121,7 +121,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       const k = orderKey(o);
       const e = edits.get(k);
       if (!e) continue;
-      if ((e.produk !== undefined && e.produk !== o.produk) || (e.total !== undefined && e.total !== String(o.total)) || (e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos)) return true;
+      if ((e.produk !== undefined && e.produk !== o.produk) || (e.total !== undefined && e.total !== String(o.total)) || (e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos) || (e.kurir !== undefined && e.kurir !== o.kurir)) return true;
     }
     return false;
   }, [orders, edits]);
@@ -131,7 +131,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     setUpdating(true);
 
     const updates: { grup: string; sheetRow: number; fields: Record<string, string> }[] = [];
-    const kodeposUpdates: { exRow: number; kodepos: string }[] = [];
+    const kodeposUpdates: { exRow: number; kodepos?: string; kurir?: string }[] = [];
 
     for (const o of orders) {
       const k = orderKey(o);
@@ -145,8 +145,11 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       if (Object.keys(fields).length > 0) {
         updates.push({ grup: o.grup, sheetRow: o.sheetRow, fields });
       }
-      if (e.kodepos !== undefined && e.kodepos !== o.kodepos && o.exRow > 0) {
-        kodeposUpdates.push({ exRow: o.exRow, kodepos: e.kodepos });
+      if (o.exRow > 0) {
+        const kpUpdate: { exRow: number; kodepos?: string; kurir?: string } = { exRow: o.exRow };
+        if (e.kodepos !== undefined && e.kodepos !== o.kodepos) kpUpdate.kodepos = e.kodepos;
+        if (e.kurir !== undefined && e.kurir !== o.kurir) kpUpdate.kurir = e.kurir;
+        if (kpUpdate.kodepos !== undefined || kpUpdate.kurir !== undefined) kodeposUpdates.push(kpUpdate);
       }
     }
 
@@ -171,7 +174,10 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         }
         for (const u of kodeposUpdates) {
           const o = orders.find((x) => x.exRow === u.exRow);
-          if (o) (o as any).kodepos = u.kodepos;
+          if (o) {
+            if (u.kodepos !== undefined) (o as any).kodepos = u.kodepos;
+            if (u.kurir !== undefined) (o as any).kurir = u.kurir;
+          }
         }
         setSelected(new Set());
         setEdits(new Map());
@@ -189,7 +195,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const inputCls = "bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50";
   const cellInputCls = "bg-[#0d0d14] border border-[#F5A623]/30 rounded px-2 py-1 text-xs text-[#E8E6E3] focus:outline-none focus:border-[#F5A623] w-full";
   const checkboxCls = "w-4 h-4 cursor-pointer accent-[#F5A623]";
-  const COL_SPAN = 13;
+  const COL_SPAN = 14;
 
   return (
     <div className="glass p-5">
@@ -257,6 +263,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Customer</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Alamat</th>
               <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">Kode Pos</th>
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Kurir</th>
               <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">Tipe</th>
               <th className="text-center py-2 px-2 text-[#6B6B78] font-medium text-xs">Status</th>
             </tr>
@@ -325,6 +332,16 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                           className={`${cellInputCls} text-center w-20`} />
                       ) : (
                         <span className="text-xs text-[#9B9BA8]">{o.kodepos || <span className="text-[#6B6B78]">—</span>}</span>
+                      )}
+                    </td>
+                    {/* Kurir — editable when checked */}
+                    <td className="py-1 px-2">
+                      {isChecked ? (
+                        <input type="text" value={rowEdit?.kurir ?? o.kurir}
+                          onChange={(e) => setEdit(key, "kurir", e.target.value)}
+                          className={`${cellInputCls} w-32`} />
+                      ) : (
+                        <span className="text-xs text-[#9B9BA8]">{o.kurir || <span className="text-[#6B6B78]">—</span>}</span>
                       )}
                     </td>
                     <td className="py-2 px-2 text-xs text-center">

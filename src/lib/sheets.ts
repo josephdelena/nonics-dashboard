@@ -29,6 +29,7 @@ export interface OrderRow {
   tipe: "COD" | "TF";
   sheetRow: number; // 1-indexed row number in the sheet
   kodepos: string;
+  kurir: string;
   exRow: number; // row in EXCEL NONICS tab (0 = not found)
 }
 
@@ -115,6 +116,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         tipe: tipe as "COD" | "TF",
         sheetRow: ri + 2,
         kodepos: "",
+        kurir: "",
         exRow: 0,
       });
     }
@@ -125,17 +127,18 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
   try {
     const exRes = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "'EXCEL NONICS'!A2:L5000",
+      range: "'EXCEL NONICS'!A2:M5000",
     });
     // Build lookup: phone/nama → { kodepos, exRow }
-    const kpMap = new Map<string, { kodepos: string; exRow: number }>();
+    const kpMap = new Map<string, { kodepos: string; kurir: string; exRow: number }>();
     const exRows = exRes.data.values || [];
     for (let ri = 0; ri < exRows.length; ri++) {
       const row = exRows[ri];
       const nama = (row[2] || "").toString().trim().toLowerCase();   // C=Nama
       const phone = (row[3] || "").toString().replace(/\D/g, "");    // D=Telepon
       const kodepos = (row[7] || "").toString().trim();              // H=Kode Pos
-      const entry = { kodepos, exRow: ri + 2 }; // +2: header row 1, 0-indexed
+      const kurir = (row[12] || "").toString().trim();               // M=Kurir
+      const entry = { kodepos, kurir, exRow: ri + 2 };
       if (phone) kpMap.set(`p:${phone}`, entry);
       if (nama) kpMap.set(`n:${nama}`, entry);
     }
@@ -144,6 +147,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
       const nama = o.namaCustomer.trim().toLowerCase();
       const match = (phone && kpMap.get(`p:${phone}`)) || kpMap.get(`n:${nama}`);
       o.kodepos = match?.kodepos || "";
+      o.kurir = match?.kurir || "";
       o.exRow = match?.exRow || 0;
     }
   } catch { /* EXCEL NONICS tab might not exist yet */ }
@@ -185,17 +189,22 @@ export async function updateOrderFields(
 }
 
 export async function updateKodepos(
-  updates: { exRow: number; kodepos: string }[]
+  updates: { exRow: number; kodepos?: string; kurir?: string }[]
 ): Promise<number> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
 
-  const data = updates
-    .filter((u) => u.exRow > 0)
-    .flatMap((u) => [
-      { range: `'EXCEL NONICS'!H${u.exRow}`, values: [[u.kodepos]] },
-      { range: `'EXCEL NONICS'!L${u.exRow}`, values: [[u.kodepos ? "ok" : "kosong"]] },
-    ]);
+  const data: { range: string; values: string[][] }[] = [];
+  for (const u of updates) {
+    if (u.exRow <= 0) continue;
+    if (u.kodepos !== undefined) {
+      data.push({ range: `'EXCEL NONICS'!H${u.exRow}`, values: [[u.kodepos]] });
+      data.push({ range: `'EXCEL NONICS'!L${u.exRow}`, values: [[u.kodepos ? "ok" : "kosong"]] });
+    }
+    if (u.kurir !== undefined) {
+      data.push({ range: `'EXCEL NONICS'!M${u.exRow}`, values: [[u.kurir]] });
+    }
+  }
 
   if (data.length === 0) return 0;
 
