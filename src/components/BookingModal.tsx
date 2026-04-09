@@ -18,7 +18,7 @@ const SENDER_DEFAULTS = {
 
 const KURIR_MAP: Record<string, { service: string; service_type: string }> = {
   "lion parcel_Regpack": { service: "lion", service_type: "REGPACK" },
-  "id express_idlite": { service: "idexpress", service_type: "idlite" },
+  "id express_idlite": { service: "idx", service_type: "00" },
 };
 
 export default function BookingModal({ orders, onClose, onBooked }: Props) {
@@ -102,31 +102,53 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
     setBooking(true);
     setError("");
 
-    const packages = orders.map((o, i) => {
+    // Build packages with pricing lookup
+    const packages = [];
+    const pricingCache = new Map<string, number>(); // "origin|dest|service|type" → cost
+
+    for (let i = 0; i < orders.length; i++) {
+      const o = orders[i];
       const kurirKey = o.kurir || "id express_idlite";
       const kurirInfo = KURIR_MAP[kurirKey] || KURIR_MAP["id express_idlite"];
       const destKecId = destKecIds.get(o.exRow) || 0;
 
-      return {
+      // Fetch shipping_cost if destination known
+      let shippingCost = 0;
+      if (destKecId) {
+        const cacheKey = `${senderKecId}|${destKecId}|${kurirInfo.service}|${kurirInfo.service_type}`;
+        if (pricingCache.has(cacheKey)) {
+          shippingCost = pricingCache.get(cacheKey)!;
+        } else {
+          const pricing = await fetchWithTimeout("/api/kiriminaja/pricing", {
+            origin: senderKecId, destination: destKecId, weight, item_value: o.total || 1000,
+          });
+          if (pricing.results) {
+            const match = pricing.results.find((r: any) => r.service === kurirInfo.service && r.service_type === kurirInfo.service_type);
+            shippingCost = match?.cost || pricing.results[0]?.cost || 0;
+          }
+          pricingCache.set(cacheKey, shippingCost);
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+
+      packages.push({
         order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
         destination_name: o.namaCustomer,
         destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
         destination_address: o.alamat || "Alamat tidak tersedia",
         destination_kecamatan_id: destKecId,
         destination_zipcode: o.kodepos || "",
-        weight,
-        width,
-        length,
-        height,
+        weight, width, length, height,
         item_value: o.total || 1000,
+        shipping_cost: shippingCost,
         service: kurirInfo.service,
         service_type: kurirInfo.service_type,
         cod: o.total || 0,
         item_name: o.produk || "Paket",
         package_type_id: 7,
         note: "HUBUNGI CUST SEBELUM KIRIM",
-      };
-    });
+      });
+    }
 
     const missingKec = packages.filter((p) => !p.destination_kecamatan_id);
     if (missingKec.length > 0) {
