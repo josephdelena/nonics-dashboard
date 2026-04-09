@@ -112,19 +112,39 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
           item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
         });
       }
-      console.log("[BOOK] Packages built:", packages.length);
+      // Split: valid (has kecamatan_id) vs skipped
+      const validPkgs = [];
+      const validTargets = [];
+      const skipped: string[] = [];
 
-      // 3. Book
-      setStatus("Booking...");
+      for (let i = 0; i < packages.length; i++) {
+        if (packages[i].destination_kecamatan_id) {
+          validPkgs.push(packages[i]);
+          validTargets.push({ grup: orders[i].grup, sheetRow: orders[i].sheetRow, exRow: orders[i].exRow });
+        } else {
+          skipped.push(orders[i].namaCustomer || `Order ${i + 1}`);
+        }
+      }
+
+      console.log("[BOOK] Valid:", validPkgs.length, "Skipped:", skipped.length);
+
+      if (validPkgs.length === 0) {
+        setError(`Semua ${skipped.length} order di-skip — kecamatan tidak ditemukan`);
+        setBooking(false);
+        return;
+      }
+
+      // 3. Book only valid packages
+      setStatus(`Booking ${validPkgs.length} order...`);
       console.log("[BOOK] Calling /api/kiriminaja/book");
       const data = await fetchWithTimeout("/api/kiriminaja/book", {
         sender: { name: sender.name, phone: sender.phone, address: sender.address, kecamatan_id: sender.kecamatan_id, zipcode: sender.zipcode },
-        packages,
-        resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
+        packages: validPkgs,
+        resiTargets: validTargets,
       });
       console.log("[BOOK] Response:", JSON.stringify(data).slice(0, 300));
 
-      if (data.success) { setResult(data); } else { setError(data.error || "Booking gagal"); }
+      if (data.success) { setResult({ ...data, skipped }); } else { setError(data.error || "Booking gagal"); }
     } catch (e: any) {
       console.error("[BOOK] Error:", e);
       setError(e.message || "Unexpected error");
@@ -149,6 +169,14 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
               </div>
             ))}
           </div>
+          {result.skipped?.length > 0 && (
+            <div className="mt-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-amber-400 text-xs font-medium mb-1">Di-skip ({result.skipped.length}) — kecamatan tidak ditemukan:</p>
+              {result.skipped.map((name: string, i: number) => (
+                <p key={i} className="text-xs text-[#9B9BA8]">{name}</p>
+              ))}
+            </div>
+          )}
           <button onClick={() => { onBooked(); onClose(); }}
             className="mt-4 w-full py-2 rounded-lg text-xs font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040]">Tutup</button>
         </div>
