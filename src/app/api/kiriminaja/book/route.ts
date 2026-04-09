@@ -120,8 +120,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: kjData.text || "Booking failed", kjData }, { status: 400 });
     }
 
-    console.log("[KJ_BOOK] Booking success! Pickup:", kjData.pickup_number);
-    console.log("[KJ_BOOK] Details:", JSON.stringify(kjData.details).slice(0, 500));
+    console.log("[KJ_BOOK] === FULL RESPONSE ===");
+    console.log("[KJ_BOOK] ALL KEYS:", Object.keys(kjData));
+    console.log("[KJ_BOOK] status:", kjData.status);
+    console.log("[KJ_BOOK] text:", kjData.text);
+    console.log("[KJ_BOOK] method:", kjData.method);
+    console.log("[KJ_BOOK] pickup_number:", kjData.pickup_number);
+    console.log("[KJ_BOOK] payment_status:", kjData.payment_status);
+    console.log("[KJ_BOOK] qr_url:", kjData.qr_url);
+    if (kjData.details) {
+      for (let di = 0; di < kjData.details.length; di++) {
+        const d = kjData.details[di];
+        console.log(`[KJ_BOOK] details[${di}] ALL KEYS:`, Object.keys(d));
+        console.log(`[KJ_BOOK] details[${di}] FULL:`, JSON.stringify(d));
+      }
+    }
+    console.log("[KJ_BOOK] FULL JSON:", JSON.stringify(kjData).slice(0, 2000));
+    console.log("[KJ_BOOK] === END RESPONSE ===");
 
     // Save resi (AWB) to EXCEL NONICS col N
     if (resiTargets && kjData.details) {
@@ -190,6 +205,7 @@ export async function POST(req: NextRequest) {
       pickup_number: kjData.pickup_number,
       payment_status: kjData.payment_status,
       details: kjData.details,
+      _raw: kjData,
     });
   } catch (e: any) {
     const msg = e.name === "AbortError" ? "Timeout 10s — KiriminAja tidak merespons" : e.message;
