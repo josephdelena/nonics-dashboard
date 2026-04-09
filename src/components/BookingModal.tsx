@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { OrderRow } from "@/lib/sheets";
 
 interface Props {
@@ -9,279 +9,185 @@ interface Props {
   onBooked: () => void;
 }
 
-const SENDER_DEFAULTS = {
-  name: "Nonics",
-  phone: "085272127441",
-  address: "Jl. Perintis Kemerdekaan KM 12, Makassar",
-  zipcode: "90245",
-};
-
 const KURIR_MAP: Record<string, { service: string; service_type: string }> = {
   "lion parcel_Regpack": { service: "lion", service_type: "REGPACK" },
   "id express_idlite": { service: "idx", service_type: "00" },
 };
 
+async function fetchWithTimeout(url: string, body: any): Promise<any> {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), 10000);
+  try {
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: c.signal });
+    clearTimeout(t);
+    return await res.json();
+  } catch (e: any) {
+    clearTimeout(t);
+    return { error: e.name === "AbortError" ? "Timeout" : e.message };
+  }
+}
+
 export default function BookingModal({ orders, onClose, onBooked }: Props) {
-  const [sender, setSender] = useState(SENDER_DEFAULTS);
-  const [senderKecId, setSenderKecId] = useState(3596); // Tamalanrea, Makassar
-  const [senderKecSearch, setSenderKecSearch] = useState("Tamalanrea, Kota Makassar, Sulawesi Selatan");
-  const [senderKecResults, setSenderKecResults] = useState<{ id: number; text: string }[]>([]);
+  const [name, setName] = useState("Nonics");
+  const [phone, setPhone] = useState("085272127441");
+  const [address, setAddress] = useState("Jl. Perintis Kemerdekaan KM 12, Makassar");
+  const [zipcode] = useState("90244");
+  const [senderKecId] = useState(3596); // Tamalanrea, Makassar
 
   const [weight, setWeight] = useState(1000);
-  const [length, setLength] = useState(15);
+  const [panjang, setPanjang] = useState(15);
   const [width, setWidth] = useState(15);
   const [height, setHeight] = useState(10);
 
   const [booking, setBooking] = useState(false);
-  const [bookingStatus, setBookingStatus] = useState("");
+  const [status, setStatus] = useState("");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
 
-  const inputCls = "bg-[#0d0d14] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 w-full";
-
-  const fetchWithTimeout = async (url: string, body: any): Promise<any> => {
-    const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 10000);
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      clearTimeout(t);
-      return await res.json();
-    } catch (e: any) {
-      clearTimeout(t);
-      return { error: e.name === "AbortError" ? "Timeout" : e.message };
-    }
-  };
-
-  const searchSenderKec = async () => {
-    if (senderKecSearch.length < 3) return;
-    const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: senderKecSearch });
-    if (data.data) setSenderKecResults(data.data);
-    else if (data.error) setError(`Lookup pengirim gagal: ${data.error}`);
-  };
+  const cls = "bg-[#0d0d14] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 w-full";
 
   const handleBook = async () => {
-    if (!senderKecId) { setError("Pilih kecamatan pengirim dulu"); return; }
     setBooking(true);
     setError("");
 
-    // Step 1: Lookup kecamatan IDs
-    setBookingStatus("Mencari kecamatan...");
+    // 1. Lookup kecamatan
+    setStatus(`Mencari kecamatan (0/${orders.length})...`);
     const kecCache = new Map<string, number>();
-    const destKecIds = new Map<number, number>();
-    let kecFailed = 0;
+    const destMap = new Map<number, number>();
 
-    for (const o of orders) {
-      const kec = o.kecamatan;
+    for (let i = 0; i < orders.length; i++) {
+      const kec = orders[i].kecamatan;
       if (!kec || kec.length < 3) continue;
-      const kecLower = kec.toLowerCase();
-      if (kecCache.has(kecLower)) {
-        destKecIds.set(o.exRow, kecCache.get(kecLower)!);
-        continue;
-      }
-      const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
-      if (data.data?.[0]?.id) {
-        kecCache.set(kecLower, data.data[0].id);
-        destKecIds.set(o.exRow, data.data[0].id);
-      } else {
-        kecFailed++;
-      }
+      const k = kec.toLowerCase();
+      if (kecCache.has(k)) { destMap.set(orders[i].exRow, kecCache.get(k)!); continue; }
+      setStatus(`Mencari kecamatan (${i + 1}/${orders.length})...`);
+      const d = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
+      if (d.data?.[0]?.id) { kecCache.set(k, d.data[0].id); destMap.set(orders[i].exRow, d.data[0].id); }
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    // Step 2: Fetch pricing
-    setBookingStatus("Mengambil ongkir...");
+    // 2. Pricing
+    setStatus("Mengambil ongkir...");
+    const priceCache = new Map<string, number>();
     const packages = [];
-    const pricingCache = new Map<string, number>();
 
     for (let i = 0; i < orders.length; i++) {
       const o = orders[i];
-      const kurirKey = o.kurir || "id express_idlite";
-      const kurirInfo = KURIR_MAP[kurirKey] || KURIR_MAP["id express_idlite"];
-      const destKecId = destKecIds.get(o.exRow) || 0;
+      const ki = KURIR_MAP[o.kurir || "id express_idlite"] || KURIR_MAP["id express_idlite"];
+      const destId = destMap.get(o.exRow) || 0;
+      let cost = 0;
 
-      let shippingCost = 0;
-      if (destKecId) {
-        const cacheKey = `${senderKecId}|${destKecId}`;
-        if (pricingCache.has(cacheKey)) {
-          shippingCost = pricingCache.get(cacheKey)!;
-        } else {
-          const pricing = await fetchWithTimeout("/api/kiriminaja/pricing", {
-            origin: senderKecId, destination: destKecId, weight, item_value: o.total || 1000,
-          });
-          if (pricing.results) {
-            const match = pricing.results.find((r: any) => r.service === kurirInfo.service && r.service_type === kurirInfo.service_type);
-            shippingCost = match?.cost || pricing.results[0]?.cost || 0;
-          }
-          pricingCache.set(cacheKey, shippingCost);
+      if (destId) {
+        const ck = `${destId}`;
+        if (priceCache.has(ck)) { cost = priceCache.get(ck)!; }
+        else {
+          const p = await fetchWithTimeout("/api/kiriminaja/pricing", { origin: senderKecId, destination: destId, weight, item_value: o.total || 1000 });
+          if (p.results) { const m = p.results.find((r: any) => r.service === ki.service && r.service_type === ki.service_type); cost = m?.cost || p.results[0]?.cost || 0; }
+          priceCache.set(ck, cost);
           await new Promise((r) => setTimeout(r, 200));
         }
       }
 
       packages.push({
         order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
-        destination_name: o.namaCustomer,
-        destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
-        destination_address: o.alamat || "Alamat tidak tersedia",
-        destination_kecamatan_id: destKecId,
-        destination_zipcode: o.kodepos || "",
-        weight, width, length, height,
-        item_value: o.total || 1000,
-        shipping_cost: shippingCost,
-        service: kurirInfo.service,
-        service_type: kurirInfo.service_type,
-        cod: o.total || 0,
-        item_name: o.produk || "Paket",
-        package_type_id: 7,
-        note: "HUBUNGI CUST SEBELUM KIRIM",
+        destination_name: o.namaCustomer, destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
+        destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
+        weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
+        service: ki.service, service_type: ki.service_type, cod: o.total || 0,
+        item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
       });
     }
 
-    if (kecFailed > 0) {
-      setError(`${kecFailed} kecamatan tidak ditemukan — order tanpa kecamatan_id mungkin ditolak`);
-    }
+    // 3. Book
+    setStatus("Booking...");
+    const data = await fetchWithTimeout("/api/kiriminaja/book", {
+      sender: { name, phone, address, kecamatan_id: senderKecId, zipcode },
+      packages,
+      resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
+    });
 
-    // Step 3: Book
-    setBookingStatus("Booking ke KiriminAja...");
-
-    try {
-      const data = await fetchWithTimeout("/api/kiriminaja/book", {
-        sender: { ...sender, kecamatan_id: senderKecId },
-        packages,
-        resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
-      });
-      if (data.success) {
-        setResult(data);
-      } else {
-        setError(data.error || "Booking gagal");
-      }
-    } catch {
-      setError("Network error");
-    } finally {
-      setBooking(false);
-    }
+    if (data.success) { setResult(data); } else { setError(data.error || "Booking gagal"); }
+    setBooking(false);
   };
 
+  // Success screen
   if (result) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-        <div className="glass w-full max-w-lg mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-emerald-400 font-semibold text-sm mb-4">Booking Berhasil</h3>
-          <p className="text-xs text-[#9B9BA8] mb-2">Pickup: {result.pickup_number}</p>
-          <p className="text-xs text-[#9B9BA8] mb-4">Payment: {result.payment_status}</p>
-          <div className="space-y-2 max-h-60 overflow-auto">
+        <div className="glass w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-emerald-400 font-semibold text-sm mb-3">Booking Berhasil</h3>
+          <p className="text-xs text-[#9B9BA8] mb-1">Pickup: {result.pickup_number}</p>
+          <p className="text-xs text-[#9B9BA8] mb-3">Payment: {result.payment_status}</p>
+          <div className="space-y-1 max-h-48 overflow-auto">
             {result.details?.map((d: any, i: number) => (
-              <div key={i} className="flex justify-between text-xs px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+              <div key={i} className="flex justify-between text-xs px-3 py-2 rounded bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
                 <span className="text-[#E8E6E3]">{d.order_id}</span>
                 <span className="text-[#F5A623] font-medium">{d.awb || d.kj_order_id || "—"}</span>
               </div>
             ))}
           </div>
           <button onClick={() => { onBooked(); onClose(); }}
-            className="mt-4 w-full px-4 py-2 rounded-lg text-xs font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040]">
-            Tutup
-          </button>
+            className="mt-4 w-full py-2 rounded-lg text-xs font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040]">Tutup</button>
         </div>
       </div>
     );
   }
 
+  // Main form
+  const totalCOD = orders.reduce((s, o) => s + (o.total || 0), 0);
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="glass w-full max-w-2xl mx-4 max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6 space-y-5">
+      <div className="glass w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-[#F5A623] font-semibold text-sm">Kirim via KiriminAja — {orders.length} order</h3>
+            <h3 className="text-[#F5A623] font-semibold text-sm">Kirim via KiriminAja</h3>
             <button onClick={onClose} className="text-[#6B6B78] hover:text-white text-lg">&times;</button>
+          </div>
+
+          {/* Summary */}
+          <div className="flex gap-4 px-4 py-3 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+            <div className="text-center flex-1">
+              <p className="text-2xl font-bold text-[#F5A623]">{orders.length}</p>
+              <p className="text-[10px] text-[#6B6B78] uppercase">Order</p>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-sm font-semibold text-[#E8E6E3]">Rp{totalCOD.toLocaleString()}</p>
+              <p className="text-[10px] text-[#6B6B78] uppercase">Total COD</p>
+            </div>
           </div>
 
           {error && <p className="text-red-400 text-xs bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
 
-          {/* Sender */}
+          {/* Pengirim */}
           <div>
-            <p className="text-[#6B6B78] text-xs font-medium mb-2 uppercase tracking-wider">Pengirim</p>
-            <div className="grid grid-cols-2 gap-3">
-              <input value={sender.name} onChange={(e) => setSender({ ...sender, name: e.target.value })} placeholder="Nama" className={inputCls} />
-              <input value={sender.phone} onChange={(e) => setSender({ ...sender, phone: e.target.value })} placeholder="HP" className={inputCls} />
-              <input value={sender.address} onChange={(e) => setSender({ ...sender, address: e.target.value })} placeholder="Alamat" className={`${inputCls} col-span-2`} />
-              <div className="col-span-2">
-                <div className="flex gap-2">
-                  <input value={senderKecSearch} onChange={(e) => setSenderKecSearch(e.target.value)}
-                    placeholder="Cari kecamatan pengirim..." className={`flex-1 ${inputCls}`} />
-                  <button onClick={searchSenderKec}
-                    className="px-3 py-2 rounded-lg text-xs text-[#F5A623] border border-[#F5A623]/30 hover:bg-[#F5A623]/10">Cari</button>
-                </div>
-                {senderKecResults.length > 0 && (
-                  <div className="mt-2 max-h-32 overflow-auto space-y-1">
-                    {senderKecResults.map((r) => (
-                      <button key={r.id} onClick={() => { setSenderKecId(r.id); setSenderKecResults([]); setSenderKecSearch(r.text); }}
-                        className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${senderKecId === r.id ? "bg-[#F5A623]/20 text-[#F5A623]" : "text-[#E8E6E3] hover:bg-[rgba(255,255,255,0.05)]"}`}>
-                        {r.text} <span className="text-[#6B6B78]">(ID: {r.id})</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {senderKecId > 0 && <p className="text-xs text-emerald-400 mt-1">Kecamatan ID: {senderKecId}</p>}
-              </div>
+            <p className="text-[#6B6B78] text-[10px] font-medium mb-1.5 uppercase tracking-wider">Pengirim</p>
+            <div className="grid grid-cols-2 gap-2">
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama" className={cls} />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="HP" className={cls} />
+              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Alamat" className={`${cls} col-span-2`} />
             </div>
           </div>
 
-          {/* Package defaults */}
+          {/* Dimensi */}
           <div>
-            <p className="text-[#6B6B78] text-xs font-medium mb-2 uppercase tracking-wider">Dimensi Paket (semua order)</p>
-            <div className="grid grid-cols-4 gap-3">
-              <div>
-                <label className="text-[#6B6B78] text-[10px]">Berat (g)</label>
-                <input type="number" value={weight} onChange={(e) => setWeight(+e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-[#6B6B78] text-[10px]">Panjang (cm)</label>
-                <input type="number" value={length} onChange={(e) => setLength(+e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-[#6B6B78] text-[10px]">Lebar (cm)</label>
-                <input type="number" value={width} onChange={(e) => setWidth(+e.target.value)} className={inputCls} />
-              </div>
-              <div>
-                <label className="text-[#6B6B78] text-[10px]">Tinggi (cm)</label>
-                <input type="number" value={height} onChange={(e) => setHeight(+e.target.value)} className={inputCls} />
-              </div>
-            </div>
-          </div>
-
-          {/* Order preview */}
-          <div>
-            <p className="text-[#6B6B78] text-xs font-medium mb-2 uppercase tracking-wider">
-              Orders
-            </p>
-            <div className="max-h-48 overflow-auto space-y-1">
-              {orders.map((o, i) => {
-                return (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-xs">
-                    <span className="text-[#E8E6E3] flex-1 truncate">{o.namaCustomer}</span>
-                    <span className="text-[#9B9BA8] truncate max-w-[120px]">{o.kecamatan || "—"}</span>
-                    <span className="text-[#6B6B78]">{o.kurir || "idx"}</span>
-                    <span className="text-[#F5A623] font-medium">Rp{(o.total || 0).toLocaleString()}</span>
-                  </div>
-                );
-              })}
+            <p className="text-[#6B6B78] text-[10px] font-medium mb-1.5 uppercase tracking-wider">Dimensi Paket</p>
+            <div className="grid grid-cols-4 gap-2">
+              <div><label className="text-[#6B6B78] text-[10px]">Berat (g)</label><input type="number" value={weight} onChange={(e) => setWeight(+e.target.value)} className={cls} /></div>
+              <div><label className="text-[#6B6B78] text-[10px]">P (cm)</label><input type="number" value={panjang} onChange={(e) => setPanjang(+e.target.value)} className={cls} /></div>
+              <div><label className="text-[#6B6B78] text-[10px]">L (cm)</label><input type="number" value={width} onChange={(e) => setWidth(+e.target.value)} className={cls} /></div>
+              <div><label className="text-[#6B6B78] text-[10px]">T (cm)</label><input type="number" value={height} onChange={(e) => setHeight(+e.target.value)} className={cls} /></div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-2 pt-1">
             <button onClick={handleBook} disabled={booking}
-              className="flex-1 px-4 py-3 rounded-lg text-sm font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040] hover:brightness-110 disabled:opacity-50 transition-all">
-              {booking ? (bookingStatus || "Booking...") : `Kirim ${orders.length} Order`}
+              className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040] hover:brightness-110 disabled:opacity-50 transition-all">
+              {booking ? status : `Kirim ${orders.length} Order`}
             </button>
-            <button onClick={onClose}
-              className="px-4 py-3 rounded-lg text-sm text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30">
-              Batal
-            </button>
+            <button onClick={onClose} disabled={booking}
+              className="px-4 py-2.5 rounded-lg text-sm text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30 disabled:opacity-30">Batal</button>
           </div>
         </div>
       </div>
