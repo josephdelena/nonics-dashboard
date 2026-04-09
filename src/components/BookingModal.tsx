@@ -46,68 +46,105 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
   const cls = "bg-[#0d0d14] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 w-full";
 
+  // MOCK MODE — set to false to use real API
+  const MOCK = true;
+
   const handleBook = async () => {
+    console.log("[BOOK] handleBook called");
+    console.log("[BOOK] orders:", orders.length);
+    console.log("[BOOK] sender:", name, phone, senderKecId);
+    console.log("[BOOK] dimensions:", weight, panjang, width, height);
+
     setBooking(true);
     setError("");
 
-    // 1. Lookup kecamatan
-    setStatus(`Mencari kecamatan (0/${orders.length})...`);
-    const kecCache = new Map<string, number>();
-    const destMap = new Map<number, number>();
+    try {
+      // 1. Lookup kecamatan (mock)
+      console.log("[BOOK] Step 1: kecamatan lookup start");
+      setStatus(`Mencari kecamatan (0/${orders.length})...`);
+      const destMap = new Map<number, number>();
 
-    for (let i = 0; i < orders.length; i++) {
-      const kec = orders[i].kecamatan;
-      if (!kec || kec.length < 3) continue;
-      const k = kec.toLowerCase();
-      if (kecCache.has(k)) { destMap.set(orders[i].exRow, kecCache.get(k)!); continue; }
-      setStatus(`Mencari kecamatan (${i + 1}/${orders.length})...`);
-      const d = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
-      if (d.data?.[0]?.id) { kecCache.set(k, d.data[0].id); destMap.set(orders[i].exRow, d.data[0].id); }
-      await new Promise((r) => setTimeout(r, 200));
-    }
-
-    // 2. Pricing
-    setStatus("Mengambil ongkir...");
-    const priceCache = new Map<string, number>();
-    const packages = [];
-
-    for (let i = 0; i < orders.length; i++) {
-      const o = orders[i];
-      const ki = KURIR_MAP[o.kurir || "id express_idlite"] || KURIR_MAP["id express_idlite"];
-      const destId = destMap.get(o.exRow) || 0;
-      let cost = 0;
-
-      if (destId) {
-        const ck = `${destId}`;
-        if (priceCache.has(ck)) { cost = priceCache.get(ck)!; }
-        else {
-          const p = await fetchWithTimeout("/api/kiriminaja/pricing", { origin: senderKecId, destination: destId, weight, item_value: o.total || 1000 });
-          if (p.results) { const m = p.results.find((r: any) => r.service === ki.service && r.service_type === ki.service_type); cost = m?.cost || p.results[0]?.cost || 0; }
-          priceCache.set(ck, cost);
+      if (MOCK) {
+        console.log("[BOOK] MOCK: skipping kecamatan lookup, using 548 for all");
+        orders.forEach((o) => destMap.set(o.exRow, 548));
+      } else {
+        const kecCache = new Map<string, number>();
+        for (let i = 0; i < orders.length; i++) {
+          const kec = orders[i].kecamatan;
+          if (!kec || kec.length < 3) continue;
+          const k = kec.toLowerCase();
+          if (kecCache.has(k)) { destMap.set(orders[i].exRow, kecCache.get(k)!); continue; }
+          setStatus(`Mencari kecamatan (${i + 1}/${orders.length})...`);
+          console.log(`[BOOK] Lookup kecamatan: ${kec}`);
+          const d = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
+          console.log(`[BOOK] Kecamatan result:`, d.data?.[0]?.id || "not found");
+          if (d.data?.[0]?.id) { kecCache.set(k, d.data[0].id); destMap.set(orders[i].exRow, d.data[0].id); }
           await new Promise((r) => setTimeout(r, 200));
         }
       }
+      console.log("[BOOK] Step 1 done, destMap size:", destMap.size);
 
-      packages.push({
-        order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
-        destination_name: o.namaCustomer, destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
-        destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
-        weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
-        service: ki.service, service_type: ki.service_type, cod: o.total || 0,
-        item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
-      });
+      // 2. Pricing (mock)
+      console.log("[BOOK] Step 2: pricing start");
+      setStatus("Mengambil ongkir...");
+      const packages = [];
+
+      for (let i = 0; i < orders.length; i++) {
+        const o = orders[i];
+        const ki = KURIR_MAP[o.kurir || "id express_idlite"] || KURIR_MAP["id express_idlite"];
+        const destId = destMap.get(o.exRow) || 0;
+        let cost = 0;
+
+        if (MOCK) {
+          cost = 25000;
+          console.log(`[BOOK] MOCK: order ${i} cost=25000`);
+        } else if (destId) {
+          console.log(`[BOOK] Pricing: origin=${senderKecId} dest=${destId}`);
+          const p = await fetchWithTimeout("/api/kiriminaja/pricing", { origin: senderKecId, destination: destId, weight, item_value: o.total || 1000 });
+          if (p.results) { const m = p.results.find((r: any) => r.service === ki.service && r.service_type === ki.service_type); cost = m?.cost || p.results[0]?.cost || 0; }
+          console.log(`[BOOK] Pricing result: cost=${cost}`);
+          await new Promise((r) => setTimeout(r, 200));
+        }
+
+        packages.push({
+          order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
+          destination_name: o.namaCustomer, destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
+          destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
+          weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
+          service: ki.service, service_type: ki.service_type, cod: o.total || 0,
+          item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
+        });
+      }
+      console.log("[BOOK] Step 2 done, packages:", packages.length);
+
+      // 3. Book (mock)
+      console.log("[BOOK] Step 3: booking start");
+      setStatus("Booking...");
+
+      if (MOCK) {
+        console.log("[BOOK] MOCK: returning fake success");
+        setResult({
+          pickup_number: "MOCK-123456",
+          payment_status: "paid",
+          details: packages.map((p) => ({ order_id: p.order_id, kj_order_id: p.order_id, awb: `AWB-MOCK-${p.order_id}`, service: p.service, service_type: p.service_type })),
+        });
+      } else {
+        console.log("[BOOK] Calling /api/kiriminaja/book");
+        const data = await fetchWithTimeout("/api/kiriminaja/book", {
+          sender: { name, phone, address, kecamatan_id: senderKecId, zipcode },
+          packages,
+          resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
+        });
+        console.log("[BOOK] Book response:", JSON.stringify(data).slice(0, 300));
+        if (data.success) { setResult(data); } else { setError(data.error || "Booking gagal"); }
+      }
+    } catch (e: any) {
+      console.error("[BOOK] Error:", e);
+      setError(e.message || "Unexpected error");
+    } finally {
+      console.log("[BOOK] Done");
+      setBooking(false);
     }
-
-    // 3. Book
-    setStatus("Booking...");
-    const data = await fetchWithTimeout("/api/kiriminaja/book", {
-      sender: { name, phone, address, kecamatan_id: senderKecId, zipcode },
-      packages,
-      resiTargets: orders.map((o) => ({ grup: o.grup, sheetRow: o.sheetRow, exRow: o.exRow })),
-    });
-
-    if (data.success) { setResult(data); } else { setError(data.error || "Booking gagal"); }
-    setBooking(false);
   };
 
   // Success screen
