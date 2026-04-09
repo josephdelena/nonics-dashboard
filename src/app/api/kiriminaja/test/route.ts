@@ -36,7 +36,7 @@ export async function GET() {
     kecamatan_id: 548, // fallback dummy
     zipcode: "90245",
     packages: [{
-      order_id: "NNS-TEST001",
+      order_id: "NNC-TEST001",
       destination_name: "Test Customer",
       destination_phone: "081234567890",
       destination_address: "Jl. Test Alamat No 123, Kecamatan Test",

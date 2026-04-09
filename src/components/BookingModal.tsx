@@ -108,7 +108,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
       const destKecId = destKecIds.get(o.exRow) || 0;
 
       return {
-        order_id: `NNS-${String(i + 1).padStart(6, "0")}`,
+        order_id: `NNC-${String(i + 1).padStart(6, "0")}`,
         destination_name: o.namaCustomer,
         destination_phone: o.noWa.startsWith("0") ? o.noWa : `0${o.noWa}`,
         destination_address: o.alamat || "Alamat tidak tersedia",
