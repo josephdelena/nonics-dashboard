@@ -258,7 +258,7 @@ export default function Home() {
 
         {activeTab === "orders" && (
           <div className="tab-fade-in">
-            <OrderTable orders={filtered} onStatusChange={() => { /* trigger re-render */ setOrders([...orders]); }} />
+            <OrderTable orders={filtered} onStatusChange={() => setOrders([...orders])} />
           </div>
         )}
       </main>

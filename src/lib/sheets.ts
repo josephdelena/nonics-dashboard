@@ -119,23 +119,32 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
   return orders;
 }
 
-export async function updateOrderStatuses(
-  updates: { grup: string; sheetRow: number; status: string }[]
+// Column map: field name → sheet column letter
+const COL_MAP: Record<string, string> = {
+  status: "L",
+  alamat: "K",
+};
+
+export async function updateOrderFields(
+  updates: { grup: string; sheetRow: number; fields: Record<string, string> }[]
 ): Promise<number> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
 
-  const data = updates.map((u) => ({
-    range: `'${u.grup}'!L${u.sheetRow}`,
-    values: [[u.status]],
-  }));
+  const data: { range: string; values: string[][] }[] = [];
+  for (const u of updates) {
+    for (const [field, value] of Object.entries(u.fields)) {
+      const col = COL_MAP[field];
+      if (!col) continue;
+      data.push({ range: `'${u.grup}'!${col}${u.sheetRow}`, values: [[value]] });
+    }
+  }
+
+  if (data.length === 0) return 0;
 
   const res = await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
-    requestBody: {
-      valueInputOption: "USER_ENTERED",
-      data,
-    },
+    requestBody: { valueInputOption: "USER_ENTERED", data },
   });
 
   return res.data.totalUpdatedCells || 0;
