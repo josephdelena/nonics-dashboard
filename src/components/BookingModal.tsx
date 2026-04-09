@@ -23,8 +23,8 @@ const KURIR_MAP: Record<string, { service: string; service_type: string }> = {
 
 export default function BookingModal({ orders, onClose, onBooked }: Props) {
   const [sender, setSender] = useState(SENDER_DEFAULTS);
-  const [senderKecId, setSenderKecId] = useState(0);
-  const [senderKecSearch, setSenderKecSearch] = useState("Tamalanrea");
+  const [senderKecId, setSenderKecId] = useState(3596); // Tamalanrea, Makassar
+  const [senderKecSearch, setSenderKecSearch] = useState("Tamalanrea, Kota Makassar, Sulawesi Selatan");
   const [senderKecResults, setSenderKecResults] = useState<{ id: number; text: string }[]>([]);
 
   const [weight, setWeight] = useState(1000);

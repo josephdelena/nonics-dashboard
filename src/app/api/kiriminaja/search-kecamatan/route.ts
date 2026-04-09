@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const res = await fetch(`${BASE}/api/mitra/v2/get_address_by_name`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": API_KEY },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
       body: JSON.stringify({ search }),
       signal: controller.signal,
     });

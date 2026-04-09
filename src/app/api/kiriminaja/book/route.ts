@@ -57,12 +57,17 @@ export async function POST(req: NextRequest) {
     console.log("[KJ_BOOK] Packages count:", packages.length);
     console.log("[KJ_BOOK] First package:", JSON.stringify(packages[0]));
 
+    // Schedule: tomorrow 10:00 WIB
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const schedule = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")} 10:00:00`;
+
     const kjBody = {
       address: sender.address,
       phone: sender.phone,
       name: sender.name,
       kecamatan_id: sender.kecamatan_id,
       zipcode: sender.zipcode || "",
+      schedule,
       packages,
     };
 
@@ -73,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     const res = await fetch(`${BASE}/api/mitra/v6.1/request_pickup`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": API_KEY },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
       body: JSON.stringify(kjBody),
       signal: controller.signal,
     });

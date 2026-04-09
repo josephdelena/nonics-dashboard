@@ -15,7 +15,7 @@ export async function GET() {
     setTimeout(() => controller1.abort(), 10000);
     const r1 = await fetch(`${BASE}/api/mitra/v2/get_address_by_name`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": API_KEY },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
       body: JSON.stringify({ search: "Tamalanrea" }),
       signal: controller1.signal,
     });
@@ -62,7 +62,7 @@ export async function GET() {
     console.log("[KJ_TEST] Booking body:", JSON.stringify(dummyBody).slice(0, 500));
     const r2 = await fetch(`${BASE}/api/mitra/v6.1/request_pickup`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": API_KEY },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
       body: JSON.stringify(dummyBody),
       signal: controller2.signal,
     });
