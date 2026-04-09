@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
         address: string;
         kecamatan_id: number;
         zipcode?: string;
+        latitude?: number;
+        longitude?: number;
       };
       packages: {
         order_id: string;
@@ -79,7 +81,7 @@ export async function POST(req: NextRequest) {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const schedule = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")} 10:00:00`;
 
-    const kjBody = {
+    const kjBody: Record<string, any> = {
       address: sender.address,
       phone: sender.phone,
       name: sender.name,
@@ -88,6 +90,8 @@ export async function POST(req: NextRequest) {
       schedule,
       packages,
     };
+    if (sender.latitude) kjBody.latitude = sender.latitude;
+    if (sender.longitude) kjBody.longitude = sender.longitude;
 
     console.log("[KJ_BOOK] Calling KiriminAja:", `${BASE}/api/mitra/v6.1/request_pickup`);
 

@@ -16,8 +16,8 @@ function resolveKurir(kurir: string): { service: string; service_type: string } 
 }
 
 const SENDERS = [
-  { label: "Nonics Makassar", name: "Nonics", phone: "081958718474", address: "Jl. Perintis Kemerdekaan KM 12, Makassar", zipcode: "90244", kecamatan_id: 3596 },
-  { label: "Depok Store", name: "Depok Store", phone: "081958718474", address: "Perumahan Palem Ganda Asri Jl. Kijang Raya A2/20 Kel. Meruyung, Limo, Depok", zipcode: "16512", kecamatan_id: 1583 },
+  { label: "Nonics Makassar", name: "Nonics", phone: "081958718474", address: "Jl. Perintis Kemerdekaan KM 12, Makassar", zipcode: "90244", kecamatan_id: 3596, latitude: -5.1477, longitude: 119.4327 },
+  { label: "Depok Store", name: "Depok Store", phone: "081958718474", address: "Perumahan Palem Ganda Asri Jl. Kijang Raya A2/20 Kel. Meruyung, Limo, Depok", zipcode: "16512", kecamatan_id: 1583, latitude: -6.3833, longitude: 106.8167 },
 ];
 
 function normalizePhone(raw: string): string {
@@ -140,7 +140,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
       validPkgs.forEach((p, i) => console.log(`[BOOK] pkg[${i}]: kurir=${orders[i]?.kurir} → service=${p.service} type=${p.service_type} dest_kec=${p.destination_kecamatan_id} cost=${p.shipping_cost}`));
       console.log("[BOOK] Calling /api/kiriminaja/book");
       const data = await fetchWithTimeout("/api/kiriminaja/book", {
-        sender: { name: sender.name, phone: sender.phone, address: sender.address, kecamatan_id: sender.kecamatan_id, zipcode: sender.zipcode },
+        sender: { name: sender.name, phone: sender.phone, address: sender.address, kecamatan_id: sender.kecamatan_id, zipcode: sender.zipcode, latitude: sender.latitude, longitude: sender.longitude },
         packages: validPkgs,
         resiTargets: validTargets,
       });
