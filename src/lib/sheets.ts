@@ -81,7 +81,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
   const sheetNames = (meta.data.sheets || [])
     .map((s) => s.properties?.title || "")
-    .filter((name) => name !== "Dashboard" && name !== "Rekap CS" && name !== "Top Produk" && name !== "");
+    .filter((name) => !["Dashboard", "Rekap CS", "Top Produk", "EXCEL NONICS", "Meta", "RTS Blacklist", ""].includes(name));
 
   const orders: OrderRow[] = [];
 

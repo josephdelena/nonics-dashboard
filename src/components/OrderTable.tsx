@@ -135,7 +135,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   };
 
   const inputCls = "bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50";
-  const checkboxCls = "w-4 h-4 rounded accent-[#F5A623] cursor-pointer";
+  const checkboxCls = "w-4 h-4 cursor-pointer accent-[#F5A623]";
 
   return (
     <div className="glass p-5">
