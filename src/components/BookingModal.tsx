@@ -9,10 +9,11 @@ interface Props {
   onBooked: () => void;
 }
 
-const KURIR_MAP: Record<string, { service: string; service_type: string }> = {
-  "lion parcel_Regpack": { service: "lion", service_type: "REGPACK" },
-  "id express_idlite": { service: "idx", service_type: "00" },
-};
+function resolveKurir(kurir: string): { service: string; service_type: string } {
+  const k = (kurir || "").toLowerCase();
+  if (k.includes("lion")) return { service: "lion", service_type: "REGPACK" };
+  return { service: "idx", service_type: "00" }; // default: id express
+}
 
 const SENDERS = [
   { label: "Nonics Makassar", name: "Nonics", phone: "081958718474", address: "Jl. Perintis Kemerdekaan KM 12, Makassar", zipcode: "90244", kecamatan_id: 3596 },
@@ -87,7 +88,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
       for (let i = 0; i < orders.length; i++) {
         const o = orders[i];
-        const ki = KURIR_MAP[o.kurir || "id express_idlite"] || KURIR_MAP["id express_idlite"];
+        const ki = resolveKurir(o.kurir);
         const destId = destMap.get(o.exRow) || 0;
         let cost = 0;
 
