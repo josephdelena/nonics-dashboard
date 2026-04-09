@@ -175,7 +175,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
             {result.details?.map((d: any, i: number) => (
               <div key={i} className="flex justify-between text-xs px-3 py-2 rounded bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
                 <span className="text-[#E8E6E3]">{d.order_id}</span>
-                <span className="text-[#F5A623] font-medium">{d.awb || d.kj_order_id || "—"}</span>
+                <span className="text-[#F5A623] font-medium">{d.awb || result.pickup_number || d.kj_order_id || "—"}</span>
               </div>
             ))}
           </div>
