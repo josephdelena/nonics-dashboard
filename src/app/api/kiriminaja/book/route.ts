@@ -17,6 +17,10 @@ function getAuth() {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("[KJ_BOOK] Starting booking...");
+    console.log("[KJ_BOOK] BASE:", BASE);
+    console.log("[KJ_BOOK] API_KEY present:", !!API_KEY, "length:", API_KEY?.length);
+
     const body = await req.json();
     const { sender, packages, resiTargets } = body as {
       sender: {
@@ -49,7 +53,10 @@ export async function POST(req: NextRequest) {
       resiTargets?: { grup: string; sheetRow: number; exRow: number }[];
     };
 
-    // Book via KiriminAja
+    console.log("[KJ_BOOK] Sender:", JSON.stringify(sender));
+    console.log("[KJ_BOOK] Packages count:", packages.length);
+    console.log("[KJ_BOOK] First package:", JSON.stringify(packages[0]));
+
     const kjBody = {
       address: sender.address,
       phone: sender.phone,
@@ -58,6 +65,8 @@ export async function POST(req: NextRequest) {
       zipcode: sender.zipcode || "",
       packages,
     };
+
+    console.log("[KJ_BOOK] Calling KiriminAja:", `${BASE}/api/mitra/v6.1/request_pickup`);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -70,14 +79,30 @@ export async function POST(req: NextRequest) {
     });
 
     clearTimeout(timeout);
-    const kjData = await res.json();
+
+    console.log("[KJ_BOOK] Response status:", res.status);
+    const kjText = await res.text();
+    console.log("[KJ_BOOK] Response body:", kjText.slice(0, 1000));
+
+    let kjData: any;
+    try {
+      kjData = JSON.parse(kjText);
+    } catch {
+      console.log("[KJ_BOOK] Failed to parse response as JSON");
+      return NextResponse.json({ error: "Invalid JSON from KiriminAja", raw: kjText.slice(0, 500) }, { status: 502 });
+    }
 
     if (!kjData.status) {
+      console.log("[KJ_BOOK] Booking failed:", kjData.text, JSON.stringify(kjData).slice(0, 500));
       return NextResponse.json({ error: kjData.text || "Booking failed", kjData }, { status: 400 });
     }
 
-    // Save resi (AWB) to EXCEL NONICS col N and order sheet
+    console.log("[KJ_BOOK] Booking success! Pickup:", kjData.pickup_number);
+    console.log("[KJ_BOOK] Details:", JSON.stringify(kjData.details).slice(0, 500));
+
+    // Save resi (AWB) to EXCEL NONICS col N
     if (resiTargets && kjData.details) {
+      console.log("[KJ_BOOK] Saving resi to EXCEL NONICS...");
       const auth = getAuth();
       const sheets = google.sheets({ version: "v4", auth });
       const batchData: { range: string; values: string[][] }[] = [];
@@ -86,9 +111,9 @@ export async function POST(req: NextRequest) {
         const detail = kjData.details[i];
         const target = resiTargets[i];
         const awb = detail.awb || detail.kj_order_id || "";
+        console.log(`[KJ_BOOK] Resi ${i}: awb=${awb}, exRow=${target?.exRow}`);
 
         if (target?.exRow > 0) {
-          // Write to EXCEL NONICS col N (Resi)
           batchData.push({ range: `'EXCEL NONICS'!N${target.exRow}`, values: [[awb]] });
         }
       }
@@ -98,6 +123,7 @@ export async function POST(req: NextRequest) {
           spreadsheetId: SPREADSHEET_ID,
           requestBody: { valueInputOption: "USER_ENTERED", data: batchData },
         });
+        console.log("[KJ_BOOK] Resi saved to sheets:", batchData.length, "cells");
       }
     }
 
@@ -109,6 +135,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     const msg = e.name === "AbortError" ? "Timeout 10s — KiriminAja tidak merespons" : e.message;
+    console.error("[KJ_BOOK] Error:", msg, e.stack?.slice(0, 300));
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
