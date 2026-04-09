@@ -7,20 +7,34 @@ export function formatNumber(val: number): string {
 }
 
 export function parseDate(dateStr: string): Date | null {
-  if (!dateStr) return null;
+  if (!dateStr || typeof dateStr !== "string") return null;
+  const trimmed = dateStr.trim();
+  if (!trimmed) return null;
+
+  let y: number, m: number, d: number;
+
   // Handle DD/MM/YYYY
-  const slashParts = dateStr.split("/");
+  const slashParts = trimmed.split("/");
   if (slashParts.length === 3) {
-    const [day, month, year] = slashParts;
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    d = parseInt(slashParts[0]);
+    m = parseInt(slashParts[1]);
+    y = parseInt(slashParts[2]);
+  } else {
+    // Handle "YYYY-MM-DD HH:MM" or "YYYY-MM-DD"
+    const dateOnly = trimmed.split(" ")[0];
+    const dashParts = dateOnly.split("-");
+    if (dashParts.length === 3) {
+      y = parseInt(dashParts[0]);
+      m = parseInt(dashParts[1]);
+      d = parseInt(dashParts[2]);
+    } else {
+      return null; // no fallback to new Date() — reject unknown formats
+    }
   }
-  // Handle "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" — strip time part for date-only comparison
-  const dateOnly = dateStr.split(" ")[0];
-  const dashParts = dateOnly.split("-");
-  if (dashParts.length === 3) {
-    const [year, month, day] = dashParts;
-    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-  }
-  const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? null : d;
+
+  // Validate parsed values
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+  if (y < 2020 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+
+  return new Date(y, m - 1, d);
 }

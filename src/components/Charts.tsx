@@ -106,11 +106,20 @@ interface ComboData { date: string; sales: number; orders: number; }
 interface TrendProps { data: ComboData[]; totalSales: number; totalOrders: number; avgOrderValue: number; }
 
 function formatDateLabel(dateStr: string): string {
-  const parts = dateStr.split("/");
-  if (parts.length === 3) return `${parseInt(parts[0])}/${parseInt(parts[1])}`;
+  if (!dateStr) return "";
   const dashParts = dateStr.split("-");
-  if (dashParts.length === 3) return `${parseInt(dashParts[2])}/${parseInt(dashParts[1])}`;
-  return dateStr;
+  if (dashParts.length === 3) {
+    const day = parseInt(dashParts[2]);
+    const month = parseInt(dashParts[1]);
+    if (!isNaN(day) && !isNaN(month)) return `${day}/${month}`;
+  }
+  const slashParts = dateStr.split("/");
+  if (slashParts.length === 3) {
+    const day = parseInt(slashParts[0]);
+    const month = parseInt(slashParts[1]);
+    if (!isNaN(day) && !isNaN(month)) return `${day}/${month}`;
+  }
+  return "";
 }
 
 function ComboTooltip({ active, payload, label }: any) {
