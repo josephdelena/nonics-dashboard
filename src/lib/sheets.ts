@@ -8,7 +8,7 @@ function getAuth() {
   );
   return new google.auth.GoogleAuth({
     credentials,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 }
 
@@ -24,9 +24,10 @@ export interface OrderRow {
   namaCustomer: string;
   noWa: string;
   alamat: string;
-  status: "Sukses" | "RTS" | "DUPLIKAT";
+  status: string;
   grup: string;
   tipe: "COD" | "TF";
+  sheetRow: number; // 1-indexed row number in the sheet
 }
 
 function parseNumber(val: string): number {
@@ -92,7 +93,8 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
     });
 
     const rows = res.data.values || [];
-    for (const row of rows) {
+    for (let ri = 0; ri < rows.length; ri++) {
+      const row = rows[ri];
       if (!row[0] || String(row[0]).startsWith("\u{1F4C5}") || row[0] === "No") continue;
       orders.push({
         no: parseInt(row[0]) || 0,
@@ -106,12 +108,35 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
         namaCustomer: row[8] || "",
         noWa: row[9] || "",
         alamat: row[10] || "",
-        status: (row[11] || "Sukses") as "Sukses" | "RTS" | "DUPLIKAT",
+        status: row[11] || "Sukses",
         grup: sheetName,
         tipe: tipe as "COD" | "TF",
+        sheetRow: ri + 2, // +2 because range starts at A2 (row 2) and ri is 0-indexed
       });
     }
   }
 
   return orders;
+}
+
+export async function updateOrderStatuses(
+  updates: { grup: string; sheetRow: number; status: string }[]
+): Promise<number> {
+  const auth = getAuth();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const data = updates.map((u) => ({
+    range: `'${u.grup}'!L${u.sheetRow}`,
+    values: [[u.status]],
+  }));
+
+  const res = await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      valueInputOption: "USER_ENTERED",
+      data,
+    },
+  });
+
+  return res.data.totalUpdatedCells || 0;
 }
