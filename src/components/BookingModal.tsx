@@ -104,7 +104,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
         }
 
         packages.push({
-          order_id: `NNC-${new Date().toISOString().slice(5,16).replace(/[-T:]/g,"")}${String(i).padStart(2,"0")}`,
+          order_id: `NNC-${Math.floor(Date.now()/1000)}-${String(Math.floor(Math.random()*10000)).padStart(4,"0")}`,
           destination_name: o.namaCustomer, destination_phone: normalizePhone(o.noWa),
           destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
           weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost,
