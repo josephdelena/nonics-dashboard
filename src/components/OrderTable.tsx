@@ -24,7 +24,7 @@ function statusBadge(status: string) {
 }
 
 // Per-row edit state
-interface RowEdits { alamat?: string; status?: string; kodepos?: string; }
+interface RowEdits { produk?: string; total?: string; alamat?: string; status?: string; kodepos?: string; }
 
 export default function OrderTable({ orders, onStatusChange }: Props) {
   const [search, setSearch] = useState("");
@@ -85,7 +85,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         paged.forEach((o) => {
           const k = orderKey(o);
           next.add(k);
-          if (!nextEdits.has(k)) nextEdits.set(k, { alamat: o.alamat, status: o.status, kodepos: o.kodepos });
+          if (!nextEdits.has(k)) nextEdits.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos });
         });
       }
       setEdits(nextEdits);
@@ -102,7 +102,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     });
     setEdits((prev) => {
       const next = new Map(prev);
-      if (next.has(k)) { next.delete(k); } else { next.set(k, { alamat: o.alamat, status: o.status, kodepos: o.kodepos }); }
+      if (next.has(k)) { next.delete(k); } else { next.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos }); }
       return next;
     });
   }, []);
@@ -121,7 +121,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       const k = orderKey(o);
       const e = edits.get(k);
       if (!e) continue;
-      if ((e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos)) return true;
+      if ((e.produk !== undefined && e.produk !== o.produk) || (e.total !== undefined && e.total !== String(o.total)) || (e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos)) return true;
     }
     return false;
   }, [orders, edits]);
@@ -138,6 +138,8 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       const e = edits.get(k);
       if (!e) continue;
       const fields: Record<string, string> = {};
+      if (e.produk !== undefined && e.produk !== o.produk) fields.produk = e.produk;
+      if (e.total !== undefined && e.total !== String(o.total)) fields.total = e.total;
       if (e.alamat !== undefined && e.alamat !== o.alamat) fields.alamat = e.alamat;
       if (e.status !== undefined && e.status !== o.status) fields.status = e.status;
       if (Object.keys(fields).length > 0) {
@@ -161,6 +163,8 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         for (const u of updates) {
           const o = orders.find((x) => x.grup === u.grup && x.sheetRow === u.sheetRow);
           if (o) {
+            if (u.fields.produk) (o as any).produk = u.fields.produk;
+            if (u.fields.total) (o as any).total = parseInt(u.fields.total) || 0;
             if (u.fields.alamat) (o as any).alamat = u.fields.alamat;
             if (u.fields.status) (o as any).status = u.fields.status;
           }
@@ -283,8 +287,24 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                     <td className="py-2 px-2 text-xs whitespace-nowrap text-[#9B9BA8]">{o.tanggal}</td>
                     <td className="py-2 px-2 text-xs text-[#9B9BA8]">{o.grup}</td>
                     <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.namaCs}</td>
-                    <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.produk}</td>
-                    <td className="py-2 px-2 text-xs text-right font-medium text-[#F5A623]">{formatRupiah(o.total)}</td>
+                    <td className="py-1 px-2">
+                      {isChecked ? (
+                        <input type="text" value={rowEdit?.produk ?? o.produk}
+                          onChange={(e) => setEdit(key, "produk", e.target.value)}
+                          className={cellInputCls} />
+                      ) : (
+                        <span className="text-xs text-[#E8E6E3]">{o.produk}</span>
+                      )}
+                    </td>
+                    <td className="py-1 px-2 text-right">
+                      {isChecked ? (
+                        <input type="number" value={rowEdit?.total ?? o.total}
+                          onChange={(e) => setEdit(key, "total", e.target.value)}
+                          className={`${cellInputCls} text-right w-24`} />
+                      ) : (
+                        <span className="text-xs font-medium text-[#F5A623]">{formatRupiah(o.total)}</span>
+                      )}
+                    </td>
                     <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.namaCustomer}</td>
                     {/* Alamat — editable when checked */}
                     <td className="py-1 px-2">

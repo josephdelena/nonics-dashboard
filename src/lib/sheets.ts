@@ -153,8 +153,10 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
 
 // Column map: field name → sheet column letter
 const COL_MAP: Record<string, string> = {
-  status: "L",
+  produk: "D",
+  total: "H",
   alamat: "K",
+  status: "L",
 };
 
 export async function updateOrderFields(

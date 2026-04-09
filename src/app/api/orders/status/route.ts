@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateOrderFields, updateKodepos } from "@/lib/sheets";
 
 const VALID_STATUSES = ["Sukses", "RTS", "DUPLIKAT", "REPEAT RTS"];
-const ALLOWED_FIELDS = ["status", "alamat"];
+const ALLOWED_FIELDS = ["produk", "total", "alamat", "status"];
 
 export async function POST(req: NextRequest) {
   try {
