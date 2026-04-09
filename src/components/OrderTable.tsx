@@ -35,6 +35,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const PAGE_SIZE = 50;
   const [page, setPage] = useState(1);
 
+  const [filterKodeposKosong, setFilterKodeposKosong] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [edits, setEdits] = useState<Map<string, RowEdits>>(new Map());
   const [updating, setUpdating] = useState(false);
@@ -52,6 +53,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       if (filterTipe !== "ALL" && o.tipe !== filterTipe) return false;
       if (filterGrup !== "ALL" && o.grup !== filterGrup) return false;
       if (filterStatus !== "ALL" && o.status !== filterStatus) return false;
+      if (filterKodeposKosong && o.kodepos) return false;
       if (search) {
         const q = search.toLowerCase();
         return o.namaCustomer.toLowerCase().includes(q) || o.produk.toLowerCase().includes(q) ||
@@ -65,7 +67,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       if (!da || !db) return 0;
       return db.getTime() - da.getTime();
     });
-  }, [orders, search, filterDate, filterTipe, filterGrup, filterStatus]);
+  }, [orders, search, filterDate, filterTipe, filterGrup, filterStatus, filterKodeposKosong]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -223,6 +225,16 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
           <option value="ALL">Semua Status</option>
           {ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <button
+          onClick={() => { setFilterKodeposKosong(!filterKodeposKosong); resetPage(); }}
+          className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all whitespace-nowrap ${
+            filterKodeposKosong
+              ? "bg-amber-500/20 border-amber-500/50 text-amber-400"
+              : "border-[rgba(255,255,255,0.08)] text-[#6B6B78] hover:border-amber-500/30 hover:text-amber-400"
+          }`}
+        >
+          Kodepos Kosong
+        </button>
       </div>
 
       <p className="text-[#6B6B78] text-xs mb-3">{filtered.length} orders ditampilkan</p>
