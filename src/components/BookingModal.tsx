@@ -33,15 +33,12 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
   const [height, setHeight] = useState(10);
 
   const [booking, setBooking] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState("");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
-  const [destKecIds, setDestKecIds] = useState<Map<number, number>>(new Map());
-  const [lookingUp, setLookingUp] = useState(false);
 
   const inputCls = "bg-[#0d0d14] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50 w-full";
 
-  // Lookup sender kecamatan
-  // Fetch with 10s timeout helper
   const fetchWithTimeout = async (url: string, body: any): Promise<any> => {
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), 10000);
@@ -67,44 +64,39 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
     else if (data.error) setError(`Lookup pengirim gagal: ${data.error}`);
   };
 
-  // Lookup all destination kecamatan IDs — skip failures, don't block
-  const lookupDestinations = async () => {
-    setLookingUp(true);
-    const map = new Map<number, number>();
-    const seen = new Map<string, number>();
-    let failed = 0;
-
-    for (const o of orders) {
-      const kec = o.kecamatan;
-      if (!kec || kec.length < 3) continue;
-      if (seen.has(kec.toLowerCase())) {
-        map.set(o.exRow, seen.get(kec.toLowerCase())!);
-        continue;
-      }
-      const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
-      if (data.data?.[0]?.id) {
-        seen.set(kec.toLowerCase(), data.data[0].id);
-        map.set(o.exRow, data.data[0].id);
-      } else {
-        failed++;
-      }
-      await new Promise((r) => setTimeout(r, 300));
-    }
-    setDestKecIds(map);
-    setLookingUp(false);
-    if (failed > 0) setError(`${failed} kecamatan tidak ditemukan — order tetap bisa dikirim tanpa kecamatan_id`);
-  };
-
-  useEffect(() => { lookupDestinations(); }, []);
-
   const handleBook = async () => {
     if (!senderKecId) { setError("Pilih kecamatan pengirim dulu"); return; }
     setBooking(true);
     setError("");
 
-    // Build packages with pricing lookup
+    // Step 1: Lookup kecamatan IDs
+    setBookingStatus("Mencari kecamatan...");
+    const kecCache = new Map<string, number>();
+    const destKecIds = new Map<number, number>();
+    let kecFailed = 0;
+
+    for (const o of orders) {
+      const kec = o.kecamatan;
+      if (!kec || kec.length < 3) continue;
+      const kecLower = kec.toLowerCase();
+      if (kecCache.has(kecLower)) {
+        destKecIds.set(o.exRow, kecCache.get(kecLower)!);
+        continue;
+      }
+      const data = await fetchWithTimeout("/api/kiriminaja/search-kecamatan", { search: kec });
+      if (data.data?.[0]?.id) {
+        kecCache.set(kecLower, data.data[0].id);
+        destKecIds.set(o.exRow, data.data[0].id);
+      } else {
+        kecFailed++;
+      }
+      await new Promise((r) => setTimeout(r, 200));
+    }
+
+    // Step 2: Fetch pricing
+    setBookingStatus("Mengambil ongkir...");
     const packages = [];
-    const pricingCache = new Map<string, number>(); // "origin|dest|service|type" → cost
+    const pricingCache = new Map<string, number>();
 
     for (let i = 0; i < orders.length; i++) {
       const o = orders[i];
@@ -112,10 +104,9 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
       const kurirInfo = KURIR_MAP[kurirKey] || KURIR_MAP["id express_idlite"];
       const destKecId = destKecIds.get(o.exRow) || 0;
 
-      // Fetch shipping_cost if destination known
       let shippingCost = 0;
       if (destKecId) {
-        const cacheKey = `${senderKecId}|${destKecId}|${kurirInfo.service}|${kurirInfo.service_type}`;
+        const cacheKey = `${senderKecId}|${destKecId}`;
         if (pricingCache.has(cacheKey)) {
           shippingCost = pricingCache.get(cacheKey)!;
         } else {
@@ -150,10 +141,12 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
       });
     }
 
-    const missingKec = packages.filter((p) => !p.destination_kecamatan_id);
-    if (missingKec.length > 0) {
-      setError(`${missingKec.length} order tanpa kecamatan_id — akan tetap dikirim, mungkin ditolak oleh KiriminAja`);
+    if (kecFailed > 0) {
+      setError(`${kecFailed} kecamatan tidak ditemukan — order tanpa kecamatan_id mungkin ditolak`);
     }
+
+    // Step 3: Book
+    setBookingStatus("Booking ke KiriminAja...");
 
     try {
       const data = await fetchWithTimeout("/api/kiriminaja/book", {
@@ -263,16 +256,14 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
           {/* Order preview */}
           <div>
             <p className="text-[#6B6B78] text-xs font-medium mb-2 uppercase tracking-wider">
-              Orders {lookingUp && <span className="text-amber-400">(mencari kecamatan...)</span>}
+              Orders
             </p>
             <div className="max-h-48 overflow-auto space-y-1">
               {orders.map((o, i) => {
-                const kecId = destKecIds.get(o.exRow);
                 return (
                   <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] text-xs">
                     <span className="text-[#E8E6E3] flex-1 truncate">{o.namaCustomer}</span>
                     <span className="text-[#9B9BA8] truncate max-w-[120px]">{o.kecamatan || "—"}</span>
-                    <span className={`${kecId ? "text-emerald-400" : "text-red-400"}`}>{kecId ? `ID:${kecId}` : "?"}</span>
                     <span className="text-[#6B6B78]">{o.kurir || "idx"}</span>
                     <span className="text-[#F5A623] font-medium">Rp{(o.total || 0).toLocaleString()}</span>
                   </div>
@@ -283,9 +274,9 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <button onClick={handleBook} disabled={booking || lookingUp}
+            <button onClick={handleBook} disabled={booking}
               className="flex-1 px-4 py-3 rounded-lg text-sm font-semibold text-[#0A0A0F] bg-gradient-to-r from-[#F5A623] to-[#F0C040] hover:brightness-110 disabled:opacity-50 transition-all">
-              {booking ? "Booking..." : `Kirim ${orders.length} Order`}
+              {booking ? (bookingStatus || "Booking...") : `Kirim ${orders.length} Order`}
             </button>
             <button onClick={onClose}
               className="px-4 py-3 rounded-lg text-sm text-[#6B6B78] border border-[rgba(255,255,255,0.08)] hover:border-[#F5A623]/30">
