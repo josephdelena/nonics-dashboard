@@ -198,7 +198,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const inputCls = "bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50";
   const cellInputCls = "bg-[#0d0d14] border border-[#F5A623]/30 rounded px-2 py-1 text-xs text-[#E8E6E3] focus:outline-none focus:border-[#F5A623] w-full";
   const checkboxCls = "w-4 h-4 cursor-pointer accent-[#F5A623]";
-  const COL_SPAN = showGrup ? 16 : 15;
+  const COL_SPAN = showGrup ? 17 : 16;
 
   const tableContent = (
     <div className="glass p-5">
@@ -278,6 +278,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Produk</th>
               <th className="text-right py-2 px-2 text-[#6B6B78] font-medium text-xs">Total</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Customer</th>
+              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">No HP</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Alamat</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Kecamatan</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Kabupaten</th>
@@ -332,6 +333,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                       )}
                     </td>
                     <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.namaCustomer}</td>
+                    <td className="py-2 px-2 text-xs text-[#9B9BA8] whitespace-nowrap">{o.noWa || <span className="text-[#6B6B78]">—</span>}</td>
                     {/* Alamat — editable when checked */}
                     <td className="py-1 px-2">
                       {isChecked ? (
