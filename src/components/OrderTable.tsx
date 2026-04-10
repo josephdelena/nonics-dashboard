@@ -38,6 +38,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
 
   const [filterKodeposKosong, setFilterKodeposKosong] = useState(false);
   const [showGrup, setShowGrup] = useState(false);
+  const [showCs, setShowCs] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [edits, setEdits] = useState<Map<string, RowEdits>>(new Map());
   const [updating, setUpdating] = useState(false);
@@ -198,7 +199,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const inputCls = "bg-[#12121A] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2 text-sm text-[#E8E6E3] focus:outline-none focus:border-[#F5A623]/50";
   const cellInputCls = "bg-[#0d0d14] border border-[#F5A623]/30 rounded px-2 py-1 text-xs text-[#E8E6E3] focus:outline-none focus:border-[#F5A623] w-full";
   const checkboxCls = "w-4 h-4 cursor-pointer accent-[#F5A623]";
-  const COL_SPAN = showGrup ? 17 : 16;
+  const COL_SPAN = 15 + (showGrup ? 1 : 0) + (showCs ? 1 : 0);
 
   const tableContent = (
     <div className="glass p-5">
@@ -262,6 +263,16 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         >
           Grup
         </button>
+        <button
+          onClick={() => setShowCs(!showCs)}
+          className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all whitespace-nowrap ${
+            showCs
+              ? "bg-blue-500/20 border-blue-500/50 text-blue-400"
+              : "border-[rgba(255,255,255,0.08)] text-[#6B6B78] hover:border-blue-500/30 hover:text-blue-400"
+          }`}
+        >
+          CS
+        </button>
       </div>
 
       <p className="text-[#6B6B78] text-xs mb-3">{filtered.length} orders ditampilkan</p>
@@ -274,7 +285,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
               <th className="py-2 px-2 w-8"><input type="checkbox" checked={allPageSelected} onChange={toggleAll} className={checkboxCls} /></th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Tanggal</th>
               {showGrup && <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Grup</th>}
-              <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">CS</th>
+              {showCs && <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">CS</th>}
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Produk</th>
               <th className="text-right py-2 px-2 text-[#6B6B78] font-medium text-xs">Total</th>
               <th className="text-left py-2 px-2 text-[#6B6B78] font-medium text-xs">Customer</th>
@@ -313,7 +324,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                     <td className="py-2 px-2"><input type="checkbox" checked={isChecked} onChange={() => toggleOne(o)} className={checkboxCls} /></td>
                     <td className="py-2 px-2 text-xs whitespace-nowrap text-[#9B9BA8]">{o.tanggal}</td>
                     {showGrup && <td className="py-2 px-2 text-xs text-[#9B9BA8]">{o.grup}</td>}
-                    <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.namaCs}</td>
+                    {showCs && <td className="py-2 px-2 text-xs text-[#E8E6E3]">{o.namaCs}</td>}
                     <td className="py-1 px-2">
                       {isChecked ? (
                         <input type="text" value={rowEdit?.produk ?? o.produk}
