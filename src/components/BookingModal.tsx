@@ -109,7 +109,7 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
           destination_name: o.namaCustomer, destination_phone: normalizePhone(o.noWa),
           destination_address: o.alamat || "Alamat tidak tersedia", destination_kecamatan_id: destId, destination_zipcode: o.kodepos || "",
           weight, width, length: panjang, height, item_value: o.total || 1000, shipping_cost: cost || 15000,
-          service: ki.service, service_type: ki.service_type, cod: o.total || 0,
+          service: ki.service, service_type: ki.service_type, cod: o.tipe === "TF" ? 0 : (o.total || 0),
           item_name: o.produk || "Paket", package_type_id: 7, note: "HUBUNGI CUST SEBELUM KIRIM",
         });
       }
@@ -194,7 +194,9 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
     );
   }
 
-  const totalCOD = orders.reduce((s, o) => s + (o.total || 0), 0);
+  const hasTF = orders.some((o) => o.tipe === "TF");
+  const allTF = orders.every((o) => o.tipe === "TF");
+  const totalValue = orders.reduce((s, o) => s + (o.total || 0), 0);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -212,8 +214,8 @@ export default function BookingModal({ orders, onClose, onBooked }: Props) {
               <p className="text-[10px] text-[#6B6B78] uppercase">Order</p>
             </div>
             <div className="text-center flex-1">
-              <p className="text-sm font-semibold text-[#E8E6E3]">Rp{totalCOD.toLocaleString()}</p>
-              <p className="text-[10px] text-[#6B6B78] uppercase">Total COD</p>
+              <p className="text-sm font-semibold text-[#E8E6E3]">Rp{totalValue.toLocaleString()}</p>
+              <p className="text-[10px] text-[#6B6B78] uppercase">{allTF ? "Total Nilai Barang" : hasTF ? "Total Nilai (COD+TF)" : "Total COD"}</p>
             </div>
           </div>
 
