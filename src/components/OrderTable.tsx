@@ -7,8 +7,8 @@ import { formatRupiah, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 import BookingModal from "./BookingModal";
 
-type Status = "Sukses" | "RTS" | "DUPLIKAT" | "REPEAT RTS";
-const ALL_STATUSES: Status[] = ["Sukses", "RTS", "DUPLIKAT", "REPEAT RTS"];
+type Status = "Sukses" | "RTS" | "DUPLIKAT" | "REPEAT RTS" | "Terkirim" | "Cancel";
+const ALL_STATUSES: Status[] = ["Sukses", "RTS", "DUPLIKAT", "REPEAT RTS", "Terkirim", "Cancel"];
 
 interface Props {
   orders: OrderRow[];
@@ -20,6 +20,8 @@ function statusBadge(status: string) {
     status === "RTS" ? "bg-red-500/15 text-red-400"
     : status === "DUPLIKAT" ? "bg-amber-500/15 text-amber-400"
     : status === "REPEAT RTS" ? "bg-purple-500/15 text-purple-400"
+    : status === "Terkirim" ? "bg-blue-500/15 text-blue-400"
+    : status === "Cancel" ? "bg-zinc-500/15 text-zinc-400"
     : "bg-emerald-500/15 text-emerald-400";
   return <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${cls}`}>{status}</span>;
 }
