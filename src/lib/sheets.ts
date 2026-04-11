@@ -201,7 +201,14 @@ export async function updateOrderFields(
 }
 
 export async function updateKodepos(
-  updates: { exRow: number; kodepos?: string; kurir?: string }[]
+  updates: {
+    exRow: number;
+    kabupaten?: string;
+    kecamatan?: string;
+    kodepos?: string;
+    kurir?: string;
+    status?: string;
+  }[]
 ): Promise<number> {
   const auth = getAuth();
   const sheets = google.sheets({ version: "v4", auth });
@@ -209,12 +216,20 @@ export async function updateKodepos(
   const data: { range: string; values: string[][] }[] = [];
   for (const u of updates) {
     if (u.exRow <= 0) continue;
+    if (u.kabupaten !== undefined) {
+      data.push({ range: `'EXCEL NONICS'!F${u.exRow}`, values: [[u.kabupaten]] });
+    }
+    if (u.kecamatan !== undefined) {
+      data.push({ range: `'EXCEL NONICS'!G${u.exRow}`, values: [[u.kecamatan]] });
+    }
     if (u.kodepos !== undefined) {
       data.push({ range: `'EXCEL NONICS'!H${u.exRow}`, values: [[u.kodepos]] });
-      data.push({ range: `'EXCEL NONICS'!L${u.exRow}`, values: [[u.kodepos ? "ok" : "kosong"]] });
     }
     if (u.kurir !== undefined) {
       data.push({ range: `'EXCEL NONICS'!M${u.exRow}`, values: [[u.kurir]] });
+    }
+    if (u.status !== undefined) {
+      data.push({ range: `'EXCEL NONICS'!L${u.exRow}`, values: [[u.status]] });
     }
   }
 

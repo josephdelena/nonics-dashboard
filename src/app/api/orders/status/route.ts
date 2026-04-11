@@ -9,7 +9,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { updates, kodeposUpdates } = body as {
       updates?: { grup: string; sheetRow: number; fields: Record<string, string> }[];
-      kodeposUpdates?: { exRow: number; kodepos: string }[];
+      kodeposUpdates?: {
+        exRow: number;
+        kabupaten?: string;
+        kecamatan?: string;
+        kodepos?: string;
+        kurir?: string;
+        status?: string;
+      }[];
     };
 
     let totalUpdated = 0;

@@ -27,7 +27,7 @@ function statusBadge(status: string) {
 }
 
 // Per-row edit state
-interface RowEdits { produk?: string; total?: string; alamat?: string; status?: string; kodepos?: string; kurir?: string; }
+interface RowEdits { produk?: string; total?: string; alamat?: string; status?: string; kodepos?: string; kurir?: string; kabupaten?: string; kecamatan?: string; }
 
 export default function OrderTable({ orders, onStatusChange }: Props) {
   const [search, setSearch] = useState("");
@@ -91,7 +91,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         paged.forEach((o) => {
           const k = orderKey(o);
           next.add(k);
-          if (!nextEdits.has(k)) nextEdits.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir });
+          if (!nextEdits.has(k)) nextEdits.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir, kabupaten: o.kabupaten, kecamatan: o.kecamatan });
         });
       }
       setEdits(nextEdits);
@@ -108,7 +108,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     });
     setEdits((prev) => {
       const next = new Map(prev);
-      if (next.has(k)) { next.delete(k); } else { next.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir }); }
+      if (next.has(k)) { next.delete(k); } else { next.set(k, { produk: o.produk, total: String(o.total), alamat: o.alamat, status: o.status, kodepos: o.kodepos, kurir: o.kurir, kabupaten: o.kabupaten, kecamatan: o.kecamatan }); }
       return next;
     });
   }, []);
@@ -127,7 +127,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
       const k = orderKey(o);
       const e = edits.get(k);
       if (!e) continue;
-      if ((e.produk !== undefined && e.produk !== o.produk) || (e.total !== undefined && e.total !== String(o.total)) || (e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos) || (e.kurir !== undefined && e.kurir !== o.kurir)) return true;
+      if ((e.produk !== undefined && e.produk !== o.produk) || (e.total !== undefined && e.total !== String(o.total)) || (e.alamat !== undefined && e.alamat !== o.alamat) || (e.status !== undefined && e.status !== o.status) || (e.kodepos !== undefined && e.kodepos !== o.kodepos) || (e.kurir !== undefined && e.kurir !== o.kurir) || (e.kabupaten !== undefined && e.kabupaten !== o.kabupaten) || (e.kecamatan !== undefined && e.kecamatan !== o.kecamatan)) return true;
     }
     return false;
   }, [orders, edits]);
@@ -137,7 +137,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
     setUpdating(true);
 
     const updates: { grup: string; sheetRow: number; fields: Record<string, string> }[] = [];
-    const kodeposUpdates: { exRow: number; kodepos?: string; kurir?: string }[] = [];
+    const kodeposUpdates: { exRow: number; kabupaten?: string; kecamatan?: string; kodepos?: string; kurir?: string; status?: string }[] = [];
 
     for (const o of orders) {
       const k = orderKey(o);
@@ -152,10 +152,18 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         updates.push({ grup: o.grup, sheetRow: o.sheetRow, fields });
       }
       if (o.exRow > 0) {
-        const kpUpdate: { exRow: number; kodepos?: string; kurir?: string } = { exRow: o.exRow };
+        const kpUpdate: { exRow: number; kabupaten?: string; kecamatan?: string; kodepos?: string; kurir?: string; status?: string } = { exRow: o.exRow };
+        if (e.kabupaten !== undefined && e.kabupaten !== o.kabupaten) kpUpdate.kabupaten = e.kabupaten;
+        if (e.kecamatan !== undefined && e.kecamatan !== o.kecamatan) kpUpdate.kecamatan = e.kecamatan;
         if (e.kodepos !== undefined && e.kodepos !== o.kodepos) kpUpdate.kodepos = e.kodepos;
         if (e.kurir !== undefined && e.kurir !== o.kurir) kpUpdate.kurir = e.kurir;
-        if (kpUpdate.kodepos !== undefined || kpUpdate.kurir !== undefined) kodeposUpdates.push(kpUpdate);
+        // If kab/kec changed, recompute status from final values
+        if (kpUpdate.kabupaten !== undefined || kpUpdate.kecamatan !== undefined) {
+          const finalKab = (e.kabupaten ?? o.kabupaten).trim();
+          const finalKec = (e.kecamatan ?? o.kecamatan).trim();
+          kpUpdate.status = finalKab && finalKec ? "ok" : "kosong";
+        }
+        if (kpUpdate.kabupaten !== undefined || kpUpdate.kecamatan !== undefined || kpUpdate.kodepos !== undefined || kpUpdate.kurir !== undefined) kodeposUpdates.push(kpUpdate);
       }
     }
 
@@ -181,6 +189,8 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
         for (const u of kodeposUpdates) {
           const o = orders.find((x) => x.exRow === u.exRow);
           if (o) {
+            if (u.kabupaten !== undefined) (o as any).kabupaten = u.kabupaten;
+            if (u.kecamatan !== undefined) (o as any).kecamatan = u.kecamatan;
             if (u.kodepos !== undefined) (o as any).kodepos = u.kodepos;
             if (u.kurir !== undefined) (o as any).kurir = u.kurir;
           }
@@ -357,13 +367,27 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
                         <span className="text-xs text-[#9B9BA8] block max-w-[200px] truncate" title={o.alamat}>{o.alamat}</span>
                       )}
                     </td>
-                    {/* Kecamatan */}
-                    <td className="py-2 px-2">
-                      <span className="text-xs text-[#9B9BA8]">{o.kecamatan || <span className="text-[#6B6B78]">—</span>}</span>
+                    {/* Kecamatan — editable when checked */}
+                    <td className="py-1 px-2">
+                      {isChecked ? (
+                        <input type="text" value={rowEdit?.kecamatan ?? o.kecamatan}
+                          onChange={(e) => setEdit(key, "kecamatan", e.target.value)}
+                          placeholder="—"
+                          className={`${cellInputCls} w-32`} />
+                      ) : (
+                        <span className="text-xs text-[#9B9BA8]">{o.kecamatan || <span className="text-[#6B6B78]">—</span>}</span>
+                      )}
                     </td>
-                    {/* Kabupaten */}
-                    <td className="py-2 px-2">
-                      <span className="text-xs text-[#9B9BA8]">{o.kabupaten || <span className="text-[#6B6B78]">—</span>}</span>
+                    {/* Kabupaten — editable when checked */}
+                    <td className="py-1 px-2">
+                      {isChecked ? (
+                        <input type="text" value={rowEdit?.kabupaten ?? o.kabupaten}
+                          onChange={(e) => setEdit(key, "kabupaten", e.target.value)}
+                          placeholder="—"
+                          className={`${cellInputCls} w-32`} />
+                      ) : (
+                        <span className="text-xs text-[#9B9BA8]">{o.kabupaten || <span className="text-[#6B6B78]">—</span>}</span>
+                      )}
                     </td>
                     {/* Kode Pos — editable when checked */}
                     <td className="py-1 px-2 text-center">
@@ -437,7 +461,7 @@ export default function OrderTable({ orders, onStatusChange }: Props) {
   const bookingOrders = orders.filter((o) => selected.has(orderKey(o))).map((o) => {
     const e = edits.get(orderKey(o));
     if (!e) return o;
-    return { ...o, ...(e.produk !== undefined && { produk: e.produk }), ...(e.total !== undefined && { total: parseInt(e.total) || o.total }), ...(e.alamat !== undefined && { alamat: e.alamat }), ...(e.status !== undefined && { status: e.status }), ...(e.kodepos !== undefined && { kodepos: e.kodepos }), ...(e.kurir !== undefined && { kurir: e.kurir }) };
+    return { ...o, ...(e.produk !== undefined && { produk: e.produk }), ...(e.total !== undefined && { total: parseInt(e.total) || o.total }), ...(e.alamat !== undefined && { alamat: e.alamat }), ...(e.status !== undefined && { status: e.status }), ...(e.kodepos !== undefined && { kodepos: e.kodepos }), ...(e.kurir !== undefined && { kurir: e.kurir }), ...(e.kabupaten !== undefined && { kabupaten: e.kabupaten }), ...(e.kecamatan !== undefined && { kecamatan: e.kecamatan }) };
   });
 
   if (showBooking) {
