@@ -20,13 +20,22 @@ export function parseDate(dateStr: string): Date | null {
     m = parseInt(slashParts[1]);
     y = parseInt(slashParts[2]);
   } else {
-    // Handle "YYYY-MM-DD HH:MM" or "YYYY-MM-DD"
+    // Handle "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" or "DD-MM-YYYY"
     const dateOnly = trimmed.split(" ")[0];
     const dashParts = dateOnly.split("-");
     if (dashParts.length === 3) {
-      y = parseInt(dashParts[0]);
-      m = parseInt(dashParts[1]);
-      d = parseInt(dashParts[2]);
+      // Detect DD-MM-YYYY vs YYYY-MM-DD by checking first part length
+      if (dashParts[0].length <= 2 && dashParts[2].length === 4) {
+        // DD-MM-YYYY
+        d = parseInt(dashParts[0]);
+        m = parseInt(dashParts[1]);
+        y = parseInt(dashParts[2]);
+      } else {
+        // YYYY-MM-DD
+        y = parseInt(dashParts[0]);
+        m = parseInt(dashParts[1]);
+        d = parseInt(dashParts[2]);
+      }
     } else {
       return null; // no fallback to new Date() — reject unknown formats
     }
