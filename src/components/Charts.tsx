@@ -103,7 +103,7 @@ export function OrdersBarChart({ data }: { data: StackedBarData[] }) {
 
 /* ── Total Sales per Hari — Combo Chart ── */
 interface ComboData { date: string; sales: number; orders: number; }
-interface TrendProps { data: ComboData[]; totalSales: number; totalOrders: number; avgOrderValue: number; }
+interface TrendProps { data: ComboData[]; totalSales: number; totalOrders: number; avgOrderValue: number; dateLabel?: string; }
 
 function formatDateLabel(dateStr: string): string {
   if (!dateStr) return "";
@@ -158,9 +158,13 @@ function OrderDot({ cx, cy, index, dataLength }: { cx: number; cy: number; index
   );
 }
 
-export function TrendLineChart({ data, totalSales, totalOrders, avgOrderValue }: TrendProps) {
+export function TrendLineChart({ data, totalSales, totalOrders, avgOrderValue, dateLabel }: TrendProps) {
   const enriched = data.map((d, i) => ({ ...d, _isToday: i === data.length - 1 }));
   const dataLen = enriched.length;
+
+  const subtitle = dateLabel ?? (dataLen > 0
+    ? `${formatDateLabel(data[0].date)} – ${formatDateLabel(data[dataLen - 1].date)} (${dataLen} hari)`
+    : "");
 
   return (
     <div className="glass-gold p-5 col-span-1 md:col-span-2 lg:col-span-3">
@@ -168,7 +172,7 @@ export function TrendLineChart({ data, totalSales, totalOrders, avgOrderValue }:
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-4">
         <div>
           <h3 className="bg-gradient-to-r from-[#F5A623] to-[#F0C040] bg-clip-text text-transparent font-bold text-base tracking-tight">Total Sales per Hari</h3>
-          <p className="text-[11px] text-[#6B6B78] mt-0.5">30 hari terakhir</p>
+          <p className="text-[11px] text-[#6B6B78] mt-0.5">{subtitle}</p>
         </div>
         <div className="flex gap-5 flex-wrap">
           <div className="text-right">
