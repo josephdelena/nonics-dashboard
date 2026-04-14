@@ -95,7 +95,7 @@ export async function fetchAllOrders(): Promise<OrderRow[]> {
     const tipe = sheetName.includes("COD") ? "COD" : "TF";
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `'${sheetName}'!A2:L1000`,
+      range: `'${sheetName}'!A2:L5000`,
     });
 
     const rows = res.data.values || [];
