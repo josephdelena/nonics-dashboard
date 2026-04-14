@@ -75,8 +75,8 @@ export default function Home() {
     return orders.filter((o) => { const d = parseDate(o.tanggal); if (!d) return false; return !isBefore(d, from) && !isAfter(d, to); });
   }, [orders, dateRange, customFrom, customTo]);
 
-  const totalOrders = filtered.length;
-  const grossRevenue = filtered.reduce((s, o) => s + o.total, 0);
+  const totalOrders = filtered.filter((o) => o.tipe === "COD").length;
+  const grossRevenue = filtered.filter((o) => o.tipe === "COD").reduce((s, o) => s + o.total, 0);
   const rtsOrders = filtered.filter((o) => o.status === "RTS");
   const rtsRevenue = rtsOrders.reduce((s, o) => s + o.total, 0);
   const dupOrders = filtered.filter((o) => o.status === "DUPLIKAT");
@@ -125,6 +125,7 @@ export default function Home() {
 
   const trendMap = new Map<string, { sales: number; orders: number }>();
   for (const o of filtered) {
+    if (o.tipe !== "COD") continue;
     if (!o.tanggal) continue;
     const d = parseDate(o.tanggal);
     if (!d) continue;
@@ -134,7 +135,7 @@ export default function Home() {
     trendMap.set(key, e);
   }
   const allTrend = [...trendMap.entries()].map(([date, d]) => ({ date, ...d })).sort((a, b) => a.date.localeCompare(b.date));
-  const trendData = allTrend.slice(-30);
+  const trendData = allTrend;
   const totalSalesMonth = trendData.reduce((s, d) => s + d.sales, 0);
   const totalOrdersMonth = trendData.reduce((s, d) => s + d.orders, 0);
   const avgOrderValue = totalOrdersMonth > 0 ? Math.round(totalSalesMonth / totalOrdersMonth) : 0;
