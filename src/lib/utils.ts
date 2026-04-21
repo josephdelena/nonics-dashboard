@@ -6,6 +6,13 @@ export function formatNumber(val: number): string {
   return val.toLocaleString("id-ID");
 }
 
+export function formatPercent(numerator: number, denominator: number): string {
+  if (!denominator || !isFinite(denominator) || denominator === 0) return "—";
+  const pct = (numerator / denominator) * 100;
+  if (!isFinite(pct) || isNaN(pct)) return "—";
+  return pct.toFixed(2) + "%";
+}
+
 const ID_MONTHS: Record<string, number> = {
   januari: 1, februari: 2, maret: 3, april: 4, mei: 5, juni: 6,
   juli: 7, agustus: 8, september: 9, oktober: 10, november: 11, desember: 12,

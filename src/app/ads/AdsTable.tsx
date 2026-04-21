@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { AdsRow } from "@/lib/ads-sheets";
-import { formatRupiah } from "@/lib/utils";
+import { formatRupiah, formatPercent } from "@/lib/utils";
 
 interface CampaignSummary {
   account_name: string;
@@ -112,6 +112,7 @@ export default function AdsTable({ data, totalOrders }: AdsTableProps) {
             <th className={`${thClass} text-right`}>CTR</th>
             <th className={`${thClass} text-right`}>Spend</th>
             <th className={`${thClass} text-right`}>Conv.</th>
+            <th className={`${thClass} text-right`}>Conv Rate</th>
             <th className={`${thClass} text-right`}>CPA</th>
           </tr>
         </thead>
@@ -139,6 +140,7 @@ export default function AdsTable({ data, totalOrders }: AdsTableProps) {
                   <td className={tdRight + " text-[#F5A623]"}>{pct(c.clicks, c.impressions)}</td>
                   <td className={tdRight + " font-semibold text-[#F5A623]"}>{formatRupiah(Math.round(c.cost))}</td>
                   <td className={tdRight}>{c.conversions.toFixed(1)}</td>
+                  <td className={tdRight + " text-[#F5A623]"}>{formatPercent(c.conversions, c.clicks)}</td>
                   <td className={tdRight + " text-[#9B9BA8]"}>{cpa(c.cost, c.conversions)}</td>
                 </tr>
                 {isOpen &&
@@ -159,6 +161,7 @@ export default function AdsTable({ data, totalOrders }: AdsTableProps) {
                         <td className="py-2 px-3 text-xs text-right text-[#6B6B78]">{pct(ag.clicks, ag.impressions)}</td>
                         <td className="py-2 px-3 text-xs text-right text-[#9B9BA8]">{formatRupiah(Math.round(ag.cost))}</td>
                         <td className="py-2 px-3 text-xs text-right text-[#6B6B78]">{ag.conversions.toFixed(1)}</td>
+                        <td className="py-2 px-3 text-xs text-right text-[#9B9BA8]">{formatPercent(ag.conversions, ag.clicks)}</td>
                         <td className="py-2 px-3 text-xs text-right text-[#6B6B78]">{cpa(ag.cost, ag.conversions)}</td>
                       </tr>
                     ))}

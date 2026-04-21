@@ -1,6 +1,6 @@
 import { getAdsData } from "@/lib/ads-sheets";
 import { fetchAllOrders } from "@/lib/sheets";
-import { formatRupiah, formatNumber } from "@/lib/utils";
+import { formatRupiah, formatNumber, formatPercent } from "@/lib/utils";
 import AdsTable from "./AdsTable";
 import Link from "next/link";
 
@@ -155,6 +155,7 @@ export default async function AdsPage({ searchParams }: Props) {
           <KpiCard title="Total Klik" value={formatNumber(totalClicks)} />
           <KpiCard title="Avg CTR" value={avgCtr.toFixed(2) + "%"} />
           <KpiCard title="Konversi" value={totalConversions.toFixed(0)} />
+          <KpiCard title="Conv Rate" value={formatPercent(totalConversions, totalClicks)} />
           <KpiCard title="CPA" value={cpa > 0 ? formatRupiah(Math.round(cpa)) : "—"} subtitle="cost ÷ total orders" />
           <KpiCard title="ROAS" value={roas > 0 ? roas.toFixed(2) + "x" : "—"} accent subtitle="gross sales ÷ spend" />
         </div>
@@ -163,6 +164,7 @@ export default async function AdsPage({ searchParams }: Props) {
           <KpiCard title="Total Klik" value={formatNumber(totalClicks)} />
           <KpiCard title="Avg CTR" value={avgCtr.toFixed(2) + "%"} />
           <KpiCard title="Konversi" value={totalConversions.toFixed(0)} />
+          <KpiCard title="Conv Rate" value={formatPercent(totalConversions, totalClicks)} />
           <KpiCard title="CPA" value={cpa > 0 ? formatRupiah(Math.round(cpa)) : "—"} />
           <KpiCard title="ROAS" value={roas > 0 ? roas.toFixed(2) + "x" : "—"} accent />
         </div>
