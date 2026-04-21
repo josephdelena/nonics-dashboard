@@ -25,7 +25,7 @@
 // ISI SPREADSHEET_ID DI BAWAH INI (ambil dari URL Google Sheet)
 // Contoh: https://docs.google.com/spreadsheets/d/XXXXXXXX/edit
 // ============================================================
-var SPREADSHEET_ID = '';
+var SPREADSHEET_ID = '14oDFpTGtMzfUUcZ6tAt4fL02RtLXxGzUq8wF4Di7zAs';
 // ============================================================
 
 var DAYS_LOOKBACK = 90;
