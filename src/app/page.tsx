@@ -75,8 +75,8 @@ export default function Home() {
     return orders.filter((o) => { const d = parseDate(o.tanggal); if (!d) return false; return !isBefore(d, from) && !isAfter(d, to); });
   }, [orders, dateRange, customFrom, customTo]);
 
-  const totalOrders = filtered.filter((o) => o.tipe === "COD").length;
-  const grossRevenue = filtered.filter((o) => o.tipe === "COD").reduce((s, o) => s + o.total, 0);
+  const totalOrders = filtered.length;
+  const grossRevenue = filtered.reduce((s, o) => s + o.total, 0);
   const rtsOrders = filtered.filter((o) => o.status === "RTS");
   const rtsRevenue = rtsOrders.reduce((s, o) => s + o.total, 0);
   const dupOrders = filtered.filter((o) => o.status === "DUPLIKAT");
