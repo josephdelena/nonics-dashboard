@@ -1,7 +1,5 @@
 import { google } from "googleapis";
 
-const ADS_SPREADSHEET_ID = process.env.ADS_SHEET_ID!;
-
 function getAuth() {
   const credentials = JSON.parse(
     Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64!, "base64").toString()
@@ -28,6 +26,7 @@ export interface AdsRow {
 }
 
 export async function getAdsData(): Promise<AdsRow[]> {
+  const ADS_SPREADSHEET_ID = process.env.ADS_SHEET_ID;
   if (!ADS_SPREADSHEET_ID) return [];
 
   const auth = getAuth();
