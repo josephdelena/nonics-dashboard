@@ -56,7 +56,8 @@ export async function getAdsData(): Promise<AdsRow[]> {
         conversions: parseFloat(String(row[10] || "0")) || 0,
         conversions_value: parseFloat(String(row[11] || "0")) || 0,
       }));
-  } catch {
+  } catch (e) {
+    console.error("[getAdsData]", e);
     return [];
   }
 }
