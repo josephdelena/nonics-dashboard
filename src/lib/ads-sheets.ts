@@ -26,7 +26,7 @@ export interface AdsRow {
 }
 
 export async function getAdsData(): Promise<AdsRow[]> {
-  const ADS_SPREADSHEET_ID = process.env.ADS_SHEET_ID;
+  const ADS_SPREADSHEET_ID = process.env.ADS_SHEET_ID?.trim();
   if (!ADS_SPREADSHEET_ID) return [];
 
   const auth = getAuth();
