@@ -22,6 +22,7 @@ import CsPerformance from "@/components/CsPerformance";
 import TopProduk from "@/components/TopProduk";
 import OrderTable from "@/components/OrderTable";
 import RtsBreakdown from "@/components/RtsBreakdown";
+import Link from "next/link";
 import { formatRupiah, formatNumber, parseDate } from "@/lib/utils";
 import type { OrderRow } from "@/lib/sheets";
 
@@ -199,6 +200,12 @@ export default function Home() {
             {t.label}
           </button>
         ))}
+        <Link
+          href="/ads"
+          className="rounded-full px-4 py-2 text-xs font-medium transition-all text-[#6B6B78] border border-transparent hover:bg-[rgba(255,255,255,0.05)] hover:text-[#F5A623]"
+        >
+          <span className="mr-1.5">📊</span>Google Ads
+        </Link>
       </nav>
 
       {/* Tab Content */}
