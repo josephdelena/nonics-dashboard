@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { fetchAllOrders } from "@/lib/sheets";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+const getCachedOrders = unstable_cache(
+  async () => {
+    const orders = await fetchAllOrders();
+    return { orders, updatedAt: new Date().toISOString() };
+  },
+  ["orders-cache"],
+  { revalidate: 300 }
+);
 
 // In-memory rate limit: 20 requests per minute per IP
 const hits = new Map<string, { count: number; resetAt: number }>();
@@ -35,8 +42,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const orders = await fetchAllOrders();
-    return NextResponse.json({ orders, updatedAt: new Date().toISOString() });
+    const data = await getCachedOrders();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("[ORDERS_API] Error:", error instanceof Error ? error.message : "Unknown");
     return NextResponse.json(
