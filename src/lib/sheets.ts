@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { unstable_cache } from "next/cache";
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID!;
 
@@ -192,12 +193,12 @@ export async function updateOrderFields(
 
   if (data.length === 0) return 0;
 
-  const res = await sheets.spreadsheets.values.batchUpdate({
+  const firstRes = await sheets.spreadsheets.values.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
     requestBody: { valueInputOption: "USER_ENTERED", data },
   });
 
-  return res.data.totalUpdatedCells || 0;
+  return firstRes.data.totalUpdatedCells || 0;
 }
 
 export async function updateKodepos(
@@ -242,3 +243,5 @@ export async function updateKodepos(
 
   return res.data.totalUpdatedCells || 0;
 }
+
+export const fetchCachedOrders = unstable_cache(fetchAllOrders, ["all-orders"], { revalidate: 300, tags: ["orders"] });

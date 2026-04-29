@@ -1,5 +1,5 @@
-import { getAdsData } from "@/lib/ads-sheets";
-import { fetchAllOrders } from "@/lib/sheets";
+import { getCachedAdsData } from "@/lib/ads-sheets";
+import { fetchCachedOrders } from "@/lib/sheets";
 import { formatRupiah, formatNumber, formatPercent } from "@/lib/utils";
 import AdsTable from "./AdsTable";
 import Link from "next/link";
@@ -49,8 +49,8 @@ export default async function AdsPage({ searchParams }: Props) {
   const toParam = sp.to;
 
   const [allAds, allOrders] = await Promise.all([
-    getAdsData(),
-    fetchAllOrders().catch(() => []),
+    getCachedAdsData(),
+    fetchCachedOrders().catch(() => []),
   ]);
 
   const filteredAds = filterByRange(allAds, range, fromParam, toParam) as typeof allAds;

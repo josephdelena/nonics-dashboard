@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { unstable_cache } from "next/cache";
 
 function getAuth() {
   const credentials = JSON.parse(
@@ -60,3 +61,5 @@ export async function getAdsData(): Promise<AdsRow[]> {
     return [];
   }
 }
+
+export const getCachedAdsData = unstable_cache(getAdsData, ["ads-data"], { revalidate: 3600, tags: ["ads"] });

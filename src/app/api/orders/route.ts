@@ -43,7 +43,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = await getCachedOrders();
-    return NextResponse.json(data);
+    const full = req.nextUrl.searchParams.get("full") === "true";
+    if (full) return NextResponse.json(data);
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    const orders = data.orders.filter((o) => !o.tanggal || o.tanggal >= cutoffStr);
+    return NextResponse.json({ orders, updatedAt: data.updatedAt });
   } catch (error) {
     console.error("[ORDERS_API] Error:", error instanceof Error ? error.message : "Unknown");
     return NextResponse.json(
