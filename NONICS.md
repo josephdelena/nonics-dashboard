@@ -1,6 +1,6 @@
 # HANDOVER — NONICS
 *Untuk Claude baru: baca ini sebelum mulai apapun*
-*Update terakhir: 23 April 2026*
+*Update terakhir: 29 April 2026*
 
 ---
 
@@ -57,6 +57,20 @@ VPS detail: Ubuntu 22.04, 2 vCPU, 2GB RAM, path /opt/sheetgram, service file /et
 - Credentials disimpan di n8n vault: SSH password, Google Sheets OAuth2, OpenAI API key, Telegram bot token
 - Biaya: ±Rp 43.000/bulan (OpenAI API GPT-4.1-mini usage)
 
+### E. Trace (Address Intelligence Agent)
+- Tagline: "Every address, decoded." — built by DIMENSI Labs
+- Purpose: parse pesan closing CS jadi JSON terstruktur (nama, hp, alamat, kel, kec, kab/kota, prov, kodepos, produk, harga, ongkir, total)
+- Stack hybrid: GPT-4o-mini (primary, ~57%) + Claude Haiku 4.5 (fallback ~43%) + wilayah_id.json validator
+- Runtime: VPS Jagoan Hosting (103.157.97.31), integrated ke /opt/sheetgram, paralel parser existing
+- Deploy: 29 April 2026 10:22 WIB, branch phase3-trace (BELUM merge ke main)
+- Mode saat ini: SHADOW (log-only ke /opt/sheetgram/bot/trace/trace_shadow.db, ga sentuh Sheet, ga alert CS)
+- Test offline: 10/10 PASS (5 few-shot real + 5 sampel CS Liya/Mebi/Rino/Salma)
+- Auto-normalize working: "Karwaci"→"Karawaci", "Sei Beduk"→"Sungai Beduk", typo CS auto-correct
+- Cost estimate: ~Rp 260rb/bulan @ 500 order/hari (49% fallback rate dari shadow real)
+- Learning loop: SQLite trace_corrections + lookup_patterns table (stub, full implementation Phase 3.5)
+- API keys: OPENAI_API_KEY + ANTHROPIC_API_KEY di /opt/sheetgram/.env
+- Next: 7 hari evaluasi shadow mode → switch over kalau akurasi ≥95%
+
 ### C. Google Ads integration
 - Script: scripts/nonics-ads-script.gs sudah jalan di MCC defikame@gmail.com (akun 'Dimensi 1', ID 910-032-5925)
 - Data: 2.569 rows (21 Jan – 21 Apr 2026)
@@ -76,6 +90,10 @@ VPS detail: Ubuntu 22.04, 2 vCPU, 2GB RAM, path /opt/sheetgram, service file /et
 - Ads integration pakai Google Apps Script (pattern Lymont), bukan Google Ads API
 - **Monitoring stack: n8n + GPT-4.1-mini** — JANGAN ganti ke UptimeRobot (sudah digantikan The Watchtower). Semua credentials monitoring di n8n vault, bukan .env.
 - Touchfile `/tmp/sheetgram_last_write` adalah sinyal utama monitoring — Sheetgram menyentuh file ini setiap successful sheet write, Watchtower membaca staleness-nya
+- Phase 3 (Address Validator) v1 GAGAL 28 Apr (rule-based + alert palsu massal). v2 pakai LLM agent (Trace) per keputusan Donnie sejak awal.
+- Trace stack: GPT-4o-mini happy path + Haiku 4.5 fallback. JANGAN downgrade ke pure GPT-4o-mini (akurasi turun di edge case lokal). JANGAN upgrade ke pure Haiku (cost ga worth).
+- wilayah_id.json (1.3MB) di /opt/sheetgram/bot/data/ — JANGAN delete, validator depend ini.
+- Branch phase3-trace JANGAN merge ke main sampai shadow evaluasi 7 hari clear.
 
 ---
 
@@ -88,6 +106,10 @@ VPS detail: Ubuntu 22.04, 2 vCPU, 2GB RAM, path /opt/sheetgram, service file /et
 5. Redirect nonics-dashboard.vercel.app → nonics.online (opsional)
 6. Kolom STATUS di sheet (PENDING/KIRIM/CANCEL) untuk flow fulfillment
 7. Web app /scan barcode untuk update status KIRIM
+8. Daily report Trace ke grup KA Advertisers via @nonicsbot (rencana implement next session)
+9. Evaluasi shadow mode 7 hari berturut-turut → switch over kalau akurasi ≥95%
+10. Phase 3.5: full learning loop (auto-promote pattern ke lookup_table.json setelah 10x koreksi konsisten)
+11. Disk space monitoring trace_shadow.db (rotasi monthly nanti)
 
 ---
 
@@ -101,12 +123,15 @@ VPS detail: Ubuntu 22.04, 2 vCPU, 2GB RAM, path /opt/sheetgram, service file /et
 
 ---
 
-## 9. LESSONS 22 APRIL 2026
+## 9. LESSONS 22-28 APRIL 2026
 
 - **Gejala "bot ngadat" berulang 20 hari = masalah infra, bukan bug aplikasi.** Railway restart container saat deploy → spawn multiple instance → session Telegram konflik (AuthKeyDuplicatedError). VPS dengan 1 IP permanen + systemd = solusi permanen untuk kelas masalah ini.
 - **Destructive clear() di pipeline periodik = anti-pattern.** Setiap `ws.clear()` di job yang jalan tiap jam akan wipe data historical. Selalu append+dedup untuk data tabular yang diakumulasi.
 - **Google Sheets API mergeCells sensitif terhadap state sheet.** Filter aktif → mergeCells 400 error → seluruh batch gagal → data hilang. Wrap semua request yang bisa fail dengan try/except + fallback non-destructive.
 - **Jangan klaim "selesai" tanpa verify observable output.** Cek row count di sheet, log line spesifik, atau screenshot dashboard — jangan asumsi dari success response API saja.
+- **Few-shot examples WAJIB pakai data real, bukan placeholder fiktif.** 28 Apr Phase 3 v1 gagal karena rule-based parsing. 29 Apr build Trace (LLM agent), CC awalnya bikin few-shot fiktif (Bekasi/Bandung/Semarang) padahal pesan asli Pamekasan/Bandung/Depok. Hasil: LLM "halusinasi" output yang sebenarnya bukan halusinasi tapi mirror fiktif input. Lesson: kalau pakai LLM untuk task domain-specific, training data (few-shot) harus dari sample real production, bukan synthetic.
+- **Validator strict + warning flag lebih baik dari validator dengan tolerance.** Mebi68 total mismatch (CS salah hitung 140rb vs 139rb seharusnya). Pilihan: pakai tolerance ±1000 (data lolos diam-diam) atau strict + warning (data tetap masuk, audit trail tetap ada). Pilih strict + warning — long-term lebih sehat untuk debugging dan QA CS.
+- **Donnie's decision dari awal: agentic, BUKAN rule-based.** Dipush back oleh Phase 3 v1 implementer, akhirnya gagal. Lesson untuk AI/CC future: kalau user non-teknis tapi decisif kasih architecture call dari awal, jangan argue kecuali ada concrete reason. User sering punya konteks bisnis yang AI ga punya.
 
 ---
 
@@ -122,3 +147,7 @@ Supabase: xdbvyomornsiwvkplved (DIMENSI ORG)
 KiriminAja: sandbox active, prefix NNC-
 n8n Watchtower: http://103.157.97.31:5678 (via SSH tunnel, port-forward dulu sebelum akses)
 Telegram alert bot: @nonicsbot → grup "KA Advertisers"
+Trace shadow DB: /opt/sheetgram/bot/trace/trace_shadow.db (SQLite)
+Wilayah dataset: /opt/sheetgram/bot/data/wilayah_id.json (1.3MB, restore from repo)
+Trace branch: phase3-trace (commit terakhir bc32956 — shadow.py + main.py integrated)
+Cek shadow data: ssh root@103.157.97.31 "sqlite3 /opt/sheetgram/bot/trace/trace_shadow.db 'SELECT model_used, confidence, COUNT(*) FROM shadow_parses WHERE date(timestamp)=date(\"now\") GROUP BY model_used, confidence;'"
